@@ -1,8 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from "vue-router";
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
-})
+import CampaignList from "../pages/CampaignList.vue";
+import CampaignCreate from "../pages/CampaignCreate.vue";
+import CampaignDetail from "../pages/CampaignDetail.vue";
 
-export default router
+const routes = [
+  { path: "/", component: CampaignList },
+  { path: "/create", component: CampaignCreate },
+  { path: "/campaign/:id", component: CampaignDetail },
+];
+
+export default createRouter({
+  history: createWebHistory(),
+  routes,
+});
