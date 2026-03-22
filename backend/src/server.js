@@ -1,9 +1,11 @@
 import app from "./app.js";
+import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./db/connect.js";
 
-
-const port = process.env.PORT ?? 3000;
+dotenv.config();
+console.log("Ma variable MONGO_URL est :", process.env.MONGO_URL);
+const port = process.env.PORT ?? 7000;
 
 app.use(cors());
 await connectDB();

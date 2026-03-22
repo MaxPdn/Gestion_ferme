@@ -1,11 +1,13 @@
-<script setup></script>
+<script setup>
+import { message, show } from "./composables/useNotify.js";
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-</template>
+  <router-view/>
 
-<style scoped></style>
+  <!-- notification -->
+  <div v-if="show"
+    class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow">
+    {{ message }}
+  </div>
+</template>
