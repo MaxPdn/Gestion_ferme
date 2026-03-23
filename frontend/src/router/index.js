@@ -6,7 +6,7 @@ import CampaignDetail from "../views/CampaignDetail.vue";
 import Departements from "@/views/Departements.vue";
 
 const routes = [
-  { path: "/", component: CampaignList },
+  { path: "/campaigns", component: CampaignList },
   { path: "/create", component: CampaignCreate },
   { path: "/campaign/:id", component: CampaignDetail },
   { path: "/departements", component: Departements },

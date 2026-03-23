@@ -27,7 +27,7 @@ const isCollapsed = ref(false);
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Layers, label: "Departements", path: "/departements" },
-  { icon: Sprout, label: "Campagnes", path: "/" },
+  { icon: Sprout, label: "Campagnes", path: "/campaigns" },
   { icon: User, label: "Suivi Individuel", path: "/individual" },
   { icon: HeartPulse, label: "Santé", path: "/health" },
   { icon: Utensils, label: "Alimentation", path: "/feed" },
