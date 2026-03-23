@@ -126,14 +126,13 @@ onMounted(fetchData);
           </button>
         </div>
       </header>
-
-      <div class="grid grid-cols-12 gap-8">
+      <div class="grid grid-cols-12 gap-8 flex-col h-[600px] overflow-hidden">
         <aside class="col-span-12 lg:col-span-4 space-y-3">
-          <h3
-            class="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-4"
+          <h2
+            class="text-[14px] font-bold text-slate-900 uppercase tracking-widest ml-1 mb-4"
           >
             Zones de production
-          </h3>
+          </h2>
 
           <div
             v-for="dept in departments"
@@ -165,7 +164,7 @@ onMounted(fetchData);
               <span
                 v-else
                 :class="[
-                  'font-bold truncate text-sm transition-colors',
+                  'text-[18px] font-bold truncate text-sm transition-colors',
                   selectedDeptId === dept._id
                     ? 'text-blue-600'
                     : 'text-slate-600',
@@ -181,13 +180,13 @@ onMounted(fetchData);
                   @click="saveEdit(dept._id)"
                   class="p-1.5 hover:bg-emerald-50 rounded-lg text-emerald-600"
                 >
-                  ✅
+                  Edit
                 </button>
                 <button
                   @click="cancelEdit"
                   class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
                 >
-                  ❌
+                  Delete
                 </button>
               </template>
               <template v-else>
@@ -243,17 +242,17 @@ onMounted(fetchData);
                 class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0"
               >
                 <h2
-                  class="text-lg font-bold text-slate-800 tracking-tight italic"
+                  class="text-lg font-bold text-slate-800 tracking-tight"
                 >
-                  Campagnes à
+                  Campagnes du département
                   <span class="text-blue-600 not-italic">{{
                     departments.find((d) => d._id === selectedDeptId)?.name
                   }}</span>
                 </h2>
                 <span
-                  class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold text-[11px] uppercase tracking-tighter"
+                  class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold text-[14px] uppercase tracking-tighter"
                 >
-                  {{ filteredCampaigns.length }} au total
+                  Nombre total : {{ filteredCampaigns.length }}
                 </span>
               </div>
 
@@ -312,7 +311,7 @@ onMounted(fetchData);
                   <div class="flex items-center gap-4">
                     <span
                       :class="[
-                        'px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter',
+                        'px-3 py-1 rounded-full text-[14px] font-black uppercase tracking-tighter',
                         camp.status === 'active'
                           ? 'bg-emerald-100 text-emerald-600'
                           : 'bg-slate-100 text-slate-500',
