@@ -11,5 +11,5 @@ app.use(cors());
 await connectDB();
 
 app.listen(port, () => {
-  console.log(`✅L'application express a démarré sur le port ${port}`);
+  console.log(`✅ L'application express a démarré sur le port ${port}`);
 });

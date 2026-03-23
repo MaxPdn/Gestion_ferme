@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
 //chema pour l'inscription & connexion
 const userSchema = new mongoose.Schema({
@@ -21,10 +21,9 @@ const userSchema = new mongoose.Schema({
     })
 
     //hacher le mdp
-    userSchema.pre("save", async function(next){
+    userSchema.pre("save", async function(){
         if(!this.isModified("password")) return;
         this.password = await bcrypt.hash(this.password, 10);
-        next();
     })
 
     //comparer le mdp

@@ -8,63 +8,70 @@ const generateToken = (id) => {
     })
 }
 
-//Inscription
+//Inscription 
 export const register = async (req, res) => {
-    //donner formulaire
-    const { username, email, password } = req.body;
+    try {
+        const { username, email, password } = req.body;
 
-    //verifier si l'utilisateur existe
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: "Cet email existe déjà" });
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: "Veuillez remplir tous les champs" });
+        }
 
-    //créer un nouvel utilisateur
-    const user = await User.create({
-        username,
-        email,
-        password
-    })
+        const userExists = await User.findOne({ email });
+        if (userExists) return res.status(400).json({ message: "Cet email existe déjà" });
 
-    //retourner token
-    res.json({
-        token: generateToken(user._id)
-    })
+        const user = await User.create({ username, email, password });
+
+        res.status(201).json({
+            message: "Utilisateur créé avec succès",
+            token: generateToken(user._id)
+        });
+    } catch (error) {
+        console.log("erreur register:", error);
+        res.status(500).json({ message: error.message });
+    }
 }
 
 //login
 export const login = async (req, res) => {
-    //recuperer email et password du formulaire
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    //recuperer l'utilisateur par email
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Cet email n'existe pas" });
+        if (!email || !password) {
+            return res.status(400).json({ message: "Veuillez remplir tous les champs" });
+        }
 
-    //comparer le mdp
-    const isMatch = await user.comparePassword(password); 
-    if (!isMatch) return res.status(400).json({ message: "Mot de passe incorrect" });
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: "Identifiants invalides" });
 
-    //retourner token
-    res.json ({
-        token: generateToken(user._id) 
-    })
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) return res.status(400).json({ message: "Identifiants invalides" });
+
+        res.json({
+            token: generateToken(user._id)
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
 //restauration du mdp
 export const resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
 
-    //recuperer email et nouveau mdp
-  const { email, newPassword } = req.body;
+        if (!email || !newPassword) {
+            return res.status(400).json({ message: "Veuillez remplir tous les champs" });
+        }
 
-  //recuperer l'utilisateur par email
-  const user = await User.findOne({ email });
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: "Email introuvable" });
 
-  //si non trouvé
-  if (!user)
-    return res.status(400).json({ message: "Email introuvable" });
+        user.password = newPassword;
+        await user.save();
 
-  //hasher le nouveau mdp
-  user.password = newPassword;
-  await user.save();
-
-  res.json({ message: "Mot de passe réinitialisé" });
+        res.json({ message: "Mot de passe réinitialisé" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
