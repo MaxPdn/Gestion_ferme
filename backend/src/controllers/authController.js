@@ -8,30 +8,6 @@ const generateToken = (id) => {
     })
 }
 
-//Inscription 
-export const register = async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
-
-        if (!username || !email || !password) {
-            return res.status(400).json({ message: "Veuillez remplir tous les champs" });
-        }
-
-        const userExists = await User.findOne({ email });
-        if (userExists) return res.status(400).json({ message: "Cet email existe déjà" });
-
-        const user = await User.create({ username, email, password });
-
-        res.status(201).json({
-            message: "Utilisateur créé avec succès",
-            token: generateToken(user._id)
-        });
-    } catch (error) {
-        console.log("erreur register:", error);
-        res.status(500).json({ message: error.message });
-    }
-}
-
 //login
 export const login = async (req, res) => {
     try {
@@ -48,7 +24,13 @@ export const login = async (req, res) => {
         if (!isMatch) return res.status(400).json({ message: "Identifiants invalides" });
 
         res.json({
-            token: generateToken(user._id)
+            token: generateToken(user._id),
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
