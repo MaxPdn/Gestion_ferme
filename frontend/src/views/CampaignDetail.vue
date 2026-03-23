@@ -64,7 +64,7 @@ const handleStatusChange = async (status) => {
 
     <!-- INFOS -->
     <div class="bg-white p-4 rounded-2xl shadow mb-6">
-      <p><strong>Département :</strong> {{ campaign.department }}</p>
+      <p><strong>Département :</strong> {{ campaign.department?.name || "N/A" }}</p>
       <p><strong>Statut :</strong> {{ campaign.status }}</p>
       <p><strong>Objectif :</strong> {{ campaign.objective }}</p>
     </div>

@@ -5,6 +5,7 @@ import SidebarItem from "../layout/SidebarItem.vue";
 
 import {
   LayoutDashboard,
+  Layers,
   Sprout,
   User,
   HeartPulse,
@@ -25,6 +26,7 @@ const isCollapsed = ref(false);
 // 🔥 mapping label → route
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: Layers, label: "Departements", path: "/departements" },
   { icon: Sprout, label: "Campagnes", path: "/" },
   { icon: User, label: "Suivi Individuel", path: "/individual" },
   { icon: HeartPulse, label: "Santé", path: "/health" },

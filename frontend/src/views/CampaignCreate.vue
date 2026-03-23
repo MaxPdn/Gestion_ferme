@@ -1,22 +1,43 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { createCampaign } from "../services/campaignService";
+import { getDepartments } from "../services/departmentService";
 
 const router = useRouter();
 
-// 📦 état formulaire
+// 📦 formulaire de création
 const form = ref({
   name: "",
-  department: "volaille",
+  department: "",
   startDate: "",
   objective: "",
   initialCount: "",
   budget: "",
 });
 
+// 🔥 départements dynamiques
+const departments = ref([]);
 const loading = ref(false);
 const error = ref("");
+
+// 📥 fetch departments
+const fetchDepartments = async () => {
+  try {
+    const res = await getDepartments();
+    departments.value = res.data;
+
+    // auto sélection du premier
+    if (res.data.length > 0) {
+      form.value.department = res.data[0]._id;
+    }
+  } catch (err) {
+    console.error("Erreur chargement départements", err);
+    error.value = "Impossible de charger les départements";
+  }
+};
+
+onMounted(fetchDepartments);
 
 // 🚀 soumission
 const handleSubmit = async () => {
@@ -29,7 +50,12 @@ const handleSubmit = async () => {
     !form.value.objective ||
     !form.value.initialCount
   ) {
-    error.value = "Veuillez remplir les champs obligatoires";
+    error.value = "Veuillez remplir tous les champs obligatoires";
+    return;
+  }
+
+  if (!form.value.department) {
+    error.value = "Veuillez choisir un département";
     return;
   }
 
@@ -38,27 +64,31 @@ const handleSubmit = async () => {
 
     await createCampaign({
       ...form.value,
+      startDate: new Date(form.value.startDate), // 🔥 FIX
       objective: Number(form.value.objective),
       initialCount: Number(form.value.initialCount),
       budget: Number(form.value.budget || 0),
     });
 
     // redirection vers liste
-    router.push("/");
+    router.push("/campagnes");
   } catch (err) {
-    error.value = "Erreur lors de la création";
-    console.error(err);
+    console.log("ERREUR BACK:", err.response?.data); // 🔥
+
+    error.value =
+      err.response?.data?.message ||
+      "Erreur lors de la création de la campagne";
   } finally {
     loading.value = false;
   }
+  console.log("DATA ENVOYÉE :", form.value);
 };
+
 </script>
 
 <template>
   <div class="p-6 max-w-xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6">
-      Nouvelle campagne
-    </h1>
+    <h1 class="text-2xl font-bold mb-6">Nouvelle campagne</h1>
 
     <!-- ERREUR -->
     <div v-if="error" class="bg-red-100 text-red-600 p-3 rounded mb-4">
@@ -75,14 +105,16 @@ const handleSubmit = async () => {
       />
 
       <!-- DEPARTEMENT -->
-      <select
-        v-model="form.department"
-        class="w-full border p-3 rounded-xl"
-      >
-        <option value="volaille">Volaille</option>
-        <option value="betail">Bétail</option>
-        <option value="pisciculture">Pisciculture</option>
+      <select v-model="form.department" class="w-full border p-3 rounded-xl">
+        <option disabled value="">Choisir un département</option>
+        <option v-for="dept in departments" :key="dept._id" :value="dept._id">
+          {{ dept.name }}
+        </option>
       </select>
+      <p v-if="departments.length === 0" class="text-red-500 text-sm">
+        Aucun département disponible. Veuillez créer un département dans la
+        rubrique Départements.
+      </p>
 
       <!-- DATE -->
       <input
@@ -118,8 +150,8 @@ const handleSubmit = async () => {
       <!-- BOUTON -->
       <button
         @click="handleSubmit"
-        :disabled="loading"
-        class="w-full bg-green-600 text-white p-3 rounded-xl hover:bg-green-700"
+        :disabled="loading || !form.department"
+        class="w-full bg-green-600 text-white p-3 rounded-xl disabled:opacity-50"
       >
         {{ loading ? "Création..." : "Créer la campagne" }}
       </button>

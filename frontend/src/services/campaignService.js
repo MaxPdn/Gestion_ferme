@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/campaigns";
+const API = "http://localhost:7000/api/campaigns";
 
 export const getCampaigns = () => axios.get(API);
 export const getCampaign = (id) => axios.get(`${API}/${id}`);
