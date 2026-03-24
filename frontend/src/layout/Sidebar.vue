@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import SidebarItem from "./SidebarItem.vue";
 import {
   LayoutDashboard,
+  Layers ,
   Sprout,
   User,
   HeartPulse,
@@ -40,17 +41,23 @@ const logout = () => {
   router.push("/");
 };
 
+// items de la sidebar
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/home" },
-  { icon: Sprout, label: "Campagnes", path: "/home" },
-  { icon: User, label: "Suivi Individuel", path: "/home" },
-  { icon: HeartPulse, label: "Santé", path: "/home" },
-  { icon: Utensils, label: "Alimentation", path: "/home" },
-  { icon: BadgeDollarSign, label: "Financier", path: "/home" },
-  { icon: Package, label: "Stocks", path: "/home" },
+   { icon: Layers , label: "Departement", path: "/departements" },
+  { icon: Sprout, label: "Campagnes", path: "/campaigns" },
+  { icon: User, label: "Suivi Individuel" },
+  { icon: HeartPulse, label: "Santé" },
+  { icon: Utensils, label: "Alimentation" },
+  { icon: BadgeDollarSign, label: "Financier", roles: ["Admin", "Gestionnaire"] },
+  { icon: Package, label: "Stocks" },
   { icon: Bell, label: "Alertes", path: "/home" },
   { icon: Users, label: "Utilisateurs", path: "/home/users", role: "Admin" },
-].filter((item) => !item.role || item.role === user.role);
+].filter((item) => {
+  if (item.roles) return item.roles.includes(user.role);
+  if (item.role) return item.role === user.role;
+  return true;
+});
 </script>
 
 <template>
