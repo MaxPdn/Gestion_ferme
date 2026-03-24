@@ -103,7 +103,7 @@ const handleDelete = async (id, name) => {
 </script>
 
 <template>
-  <div class="p-8 bg-gray-50 min-h-screen">
+  <div class="p-8 font-serif bg-gray-50 min-h-screen">
     <div
       class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
     >
@@ -179,27 +179,27 @@ const handleDelete = async (id, name) => {
           <thead class="sticky top-0 z-10">
             <tr class="bg-gray-50 border-b border-gray-100">
               <th
-                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+                class="px-6 py-4 text-x font-bold text-black-900"
               >
                 Nom Campagne
               </th>
               <th
-                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+                class="px-6 py-4 text-x font-bold text-black-900"
               >
                 Statut
               </th>
               <th
-                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+                class="px-6 py-4 text-x font-bold text-black-900"
               >
                 Progression (Ventes)
               </th>
               <th
-                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+                class="px-6 py-4 text-x font-bold text-black-900"
               >
                 Détails
               </th>
               <th
-                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right"
+                class="px-6 py-4 text-x font-bold text-black-900"
               >
                 Action
               </th>
@@ -225,7 +225,7 @@ const handleDelete = async (id, name) => {
 
               <td class="px-6 py-5">
                 <span
-                  class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+                  class="px-3 py-2 rounded text-xs uppercase font-bold"
                   :class="{
                     'bg-yellow-100 text-yellow-700':
                       campaign.status === 'preparation',
@@ -259,16 +259,16 @@ const handleDelete = async (id, name) => {
               <td class="px-6 py-5">
                 <div class="flex gap-4">
                   <div class="text-center">
-                    <span class="block text-xs text-gray-400 uppercase"
-                      >Vivant</span
+                    <span class="block text-xs text-gray-400"
+                      >Restes</span
                     >
                     <span class="font-bold text-gray-700">{{
                       campaign.currentCount
                     }}</span>
                   </div>
                   <div class="text-center border-l border-gray-100 pl-4">
-                    <span class="block text-xs text-gray-400 uppercase"
-                      >Morts</span
+                    <span class="block text-xs text-gray-400"
+                      >Pertes</span
                     >
                     <span class="font-bold text-red-500">{{
                       campaign.losses
