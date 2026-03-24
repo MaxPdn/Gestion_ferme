@@ -7,6 +7,7 @@ import {
   deleteDepartment,
 } from "../services/departmentService.js";
 import { getCampaigns } from "../services/campaignService.js";
+import Swal from 'sweetalert2'; // Importation de SweetAlert2
 
 const departments = ref([]);
 const allCampaigns = ref([]);
@@ -81,14 +82,63 @@ const saveEdit = async (id) => {
   }
 };
 
-const handleDelete = async (id) => {
-  if (!confirm("Supprimer ce département ?")) return;
-  try {
-    await deleteDepartment(id);
-    if (selectedDeptId.value === id) selectedDeptId.value = null;
-    await fetchData();
-  } catch (err) {
-    alert(err.response?.data?.message || "Erreur suppression");
+// const handleDelete = async (id) => {
+//   if (!confirm("Supprimer ce département ?")) return;
+//   try {
+//     await deleteDepartment(id);
+//     if (selectedDeptId.value === id) selectedDeptId.value = null;
+//     await fetchData();
+//   } catch (err) {
+//     alert(err.response?.data?.message || "Erreur suppression");
+//   }
+// };
+
+const handleDelete = async (id, name) => {
+  // Configuration du modal de confirmation
+  const result = await Swal.fire({
+    title: 'Êtes-vous sûr ?',
+    text: `Le département "${name}" sera définitivement supprimée.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#2563eb', // Le bleu-600 de ton bouton "Nouvelle campagne"
+    cancelButtonColor: '#94a3b8', // Un gris ardoise discret
+    confirmButtonText: 'Oui, supprimer',
+    cancelButtonText: 'Annuler',
+    reverseButtons: true, // Met "Annuler" à gauche
+    customClass: {
+      popup: 'rounded-3xl', // Pour matcher tes arrondis "rounded-3xl"
+      confirmButton: 'rounded-xl px-6 py-3 font-semibold',
+      cancelButton: 'rounded-xl px-6 py-3 font-semibold'
+    }
+  });
+
+  // Si l'utilisateur a cliqué sur "Oui"
+  if (result.isConfirmed) {
+    try {
+      await deleteDepartment(id);
+      
+      // Mise à jour de l'état local
+      departments.value = departments.value.filter(c => c._id !== id);
+
+      // Notification de succès
+      Swal.fire({
+        title: 'Supprimé !',
+        text: 'Le département a été retirée avec succès.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: { popup: 'rounded-3xl' }
+      });
+      
+    } catch (err) {
+      console.error("Erreur suppression", err);
+      Swal.fire({
+        title: 'Erreur',
+        text: 'Impossible de supprimer le département.',
+        icon: 'error',
+        customClass: { popup: 'rounded-3xl' }
+      });
+    }
   }
 };
 
@@ -210,7 +260,7 @@ onMounted(fetchData);
                   </svg>
                 </button>
                 <button
-                  @click="handleDelete(dept._id)"
+                  @click="handleDelete(dept._id, dept.name)"
                   class="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 transition text-slate-300 hover:text-red-500"
                 >
                   <svg

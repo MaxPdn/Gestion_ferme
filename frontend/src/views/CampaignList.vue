@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import { getCampaigns } from "../services/campaignService";
+import { getCampaigns, deleteCampaign } from "../services/campaignService";
+import Swal from 'sweetalert2'; // Importation de SweetAlert2
 
 const campaigns = ref([]);
 const loading = ref(true);
@@ -25,8 +26,11 @@ const fetchCampaigns = async () => {
 // 🔥 Calcul des campagnes filtrées
 const filteredCampaigns = computed(() => {
   return campaigns.value.filter((campaign) => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchQuery.value.toLowerCase());
-    const matchesStatus = statusFilter.value === "all" || campaign.status === statusFilter.value;
+    const matchesSearch = campaign.name
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+    const matchesStatus =
+      statusFilter.value === "all" || campaign.status === statusFilter.value;
     return matchesSearch && matchesStatus;
   });
 });
@@ -47,11 +51,62 @@ const getProgress = (campaign) => {
   const percentage = (campaign.sold / total) * 100;
   return Math.min(Math.round(percentage), 100);
 };
+
+const handleDelete = async (id, name) => {
+  // Configuration du modal de confirmation
+  const result = await Swal.fire({
+    title: 'Êtes-vous sûr ?',
+    text: `La campagne "${name}" sera définitivement supprimée.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#2563eb', // Le bleu-600 de ton bouton "Nouvelle campagne"
+    cancelButtonColor: '#94a3b8', // Un gris ardoise discret
+    confirmButtonText: 'Oui, supprimer',
+    cancelButtonText: 'Annuler',
+    reverseButtons: true, // Met "Annuler" à gauche
+    customClass: {
+      popup: 'rounded-3xl', // Pour matcher tes arrondis "rounded-3xl"
+      confirmButton: 'rounded-xl px-6 py-3 font-semibold',
+      cancelButton: 'rounded-xl px-6 py-3 font-semibold'
+    }
+  });
+
+  // Si l'utilisateur a cliqué sur "Oui"
+  if (result.isConfirmed) {
+    try {
+      await deleteCampaign(id);
+      
+      // Mise à jour de l'état local
+      campaigns.value = campaigns.value.filter(c => c._id !== id);
+
+      // Notification de succès
+      Swal.fire({
+        title: 'Supprimé !',
+        text: 'La campagne a été retirée avec succès.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: { popup: 'rounded-3xl' }
+      });
+      
+    } catch (err) {
+      console.error("Erreur suppression", err);
+      Swal.fire({
+        title: 'Erreur',
+        text: 'Impossible de supprimer la campagne.',
+        icon: 'error',
+        customClass: { popup: 'rounded-3xl' }
+      });
+    }
+  }
+};
 </script>
 
 <template>
   <div class="p-8 bg-gray-50 min-h-screen">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div
+      class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
+    >
       <div>
         <h1 class="text-3xl font-extrabold text-gray-900">Campagnes</h1>
         <p class="text-gray-500 mt-1">
@@ -63,8 +118,17 @@ const getProgress = (campaign) => {
         @click="goToCreate"
         class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+            clip-rule="evenodd"
+          />
         </svg>
         Nouvelle campagne
       </button>
@@ -72,14 +136,14 @@ const getProgress = (campaign) => {
 
     <div class="flex flex-col md:flex-row gap-4 mb-6">
       <div class="relative flex-1">
-        <input 
+        <input
           v-model="searchQuery"
-          type="text" 
-          placeholder="Rechercher une campagne..." 
+          type="text"
+          placeholder="Rechercher une campagne..."
           class="w-full pl-4 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
         />
       </div>
-      <select 
+      <select
         v-model="statusFilter"
         class="px-4 py-3 bg-white border border-gray-200 rounded-xl font-semibold text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm"
       >
@@ -91,7 +155,9 @@ const getProgress = (campaign) => {
     </div>
 
     <div v-if="loading" class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+      ></div>
     </div>
 
     <div
@@ -106,17 +172,37 @@ const getProgress = (campaign) => {
 
     <div
       v-else
-      class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden"
+      class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[700px]"
     >
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
-          <thead>
+          <thead class="sticky top-0 z-10">
             <tr class="bg-gray-50 border-b border-gray-100">
-              <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Nom Campagne</th>
-              <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Statut</th>
-              <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Progression (Ventes)</th>
-              <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Détails</th>
-              <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+              >
+                Nom Campagne
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+              >
+                Statut
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+              >
+                Progression (Ventes)
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider"
+              >
+                Détails
+              </th>
+              <th
+                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right"
+              >
+                Action
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
@@ -127,7 +213,9 @@ const getProgress = (campaign) => {
               @click="goToDetail(campaign._id)"
             >
               <td class="px-6 py-5">
-                <div class="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                <div
+                  class="font-bold text-gray-800 group-hover:text-blue-600 transition-colors"
+                >
                   {{ campaign.name }}
                 </div>
                 <div class="text-xs text-gray-400">
@@ -139,18 +227,24 @@ const getProgress = (campaign) => {
                 <span
                   class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
                   :class="{
-                    'bg-yellow-100 text-yellow-700': campaign.status === 'preparation',
+                    'bg-yellow-100 text-yellow-700':
+                      campaign.status === 'preparation',
                     'bg-green-100 text-green-700': campaign.status === 'active',
-                    'bg-gray-100 text-gray-600': campaign.status === 'completed',
+                    'bg-gray-100 text-gray-600':
+                      campaign.status === 'completed',
                   }"
                 >
-                  {{ campaign.status === "active" ? "En cours" : campaign.status }}
+                  {{
+                    campaign.status === "active" ? "En cours" : campaign.status
+                  }}
                 </span>
               </td>
 
               <td class="px-6 py-5 min-w-[200px]">
                 <div class="flex items-center gap-3">
-                  <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"
+                  >
                     <div
                       class="h-full bg-blue-500 rounded-full transition-all duration-700 ease-out"
                       :style="{ width: getProgress(campaign) + '%' }"
@@ -165,29 +259,52 @@ const getProgress = (campaign) => {
               <td class="px-6 py-5">
                 <div class="flex gap-4">
                   <div class="text-center">
-                    <span class="block text-xs text-gray-400 uppercase">Vivant</span>
-                    <span class="font-bold text-gray-700">{{ campaign.currentCount }}</span>
+                    <span class="block text-xs text-gray-400 uppercase"
+                      >Vivant</span
+                    >
+                    <span class="font-bold text-gray-700">{{
+                      campaign.currentCount
+                    }}</span>
                   </div>
                   <div class="text-center border-l border-gray-100 pl-4">
-                    <span class="block text-xs text-gray-400 uppercase">Morts</span>
-                    <span class="font-bold text-red-500">{{ campaign.losses }}</span>
+                    <span class="block text-xs text-gray-400 uppercase"
+                      >Morts</span
+                    >
+                    <span class="font-bold text-red-500">{{
+                      campaign.losses
+                    }}</span>
                   </div>
                 </div>
               </td>
 
               <td class="px-6 py-5 text-right">
-                <button class="text-gray-300 group-hover:text-blue-600 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div class="flex justify-end items-center gap-2">
+                  <button
+                    @click.stop="handleDelete(campaign._id, campaign.name)"
+                    class="p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    title="Supprimer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+
+                  <button class="p-2 text-gray-300 group-hover:text-blue-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      
-      <div v-if="filteredCampaigns.length === 0 && !loading" class="p-10 text-center text-gray-400 italic">
+
+      <div
+        v-if="filteredCampaigns.length === 0 && !loading"
+        class="p-10 text-center text-gray-400 italic"
+      >
         Aucune campagne ne correspond à votre recherche.
       </div>
     </div>

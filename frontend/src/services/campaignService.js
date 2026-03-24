@@ -14,3 +14,5 @@ export const addSale = (id, quantity) =>
 
 export const updateStatus = (id, status) =>
   axios.patch(`${API}/${id}/status`, { status });
+
+export const deleteCampaign = (id) => axios.delete(`${API}/${id}`);

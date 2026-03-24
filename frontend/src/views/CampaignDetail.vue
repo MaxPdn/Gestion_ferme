@@ -20,6 +20,7 @@ const fetchCampaign = async () => {
   try {
     const res = await getCampaign(route.params.id);
     campaign.value = res.data;
+    console.log(res.data);
   } catch (err) {
     console.error(err);
   } finally {
@@ -33,19 +34,19 @@ const handleAddLoss = async () => {
   if (lossInput.value <= 0) return;
   await addLoss(campaign.value._id, Number(lossInput.value));
   lossInput.value = 0;
-  fetchCampaign();
+  await fetchCampaign();
 };
 
 const handleAddSale = async () => {
   if (saleInput.value <= 0) return;
   await addSale(campaign.value._id, Number(saleInput.value));
   saleInput.value = 0;
-  fetchCampaign();
+  await fetchCampaign();
 };
 
 const handleStatusChange = async (status) => {
   await updateStatus(campaign.value._id, status);
-  fetchCampaign();
+  await fetchCampaign();
 };
 </script>
 
