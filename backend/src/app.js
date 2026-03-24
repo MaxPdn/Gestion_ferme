@@ -17,4 +17,12 @@ app.use("/api", router);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/departments", departmentRoutes);
 
+// Gestionnaire d'erreurs global
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    message: err.message || "Erreur interne du serveur",
+  });
+});
+
 export default app;

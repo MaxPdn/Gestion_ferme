@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 
+// Connexion à la base de données
 export async function connectDB() {
     const MONGO_URL = process.env.MONGO_URL;
     const DB_NAME = process.env.DB_NAME ?? 'farm_db'
