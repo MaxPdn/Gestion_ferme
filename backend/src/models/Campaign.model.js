@@ -90,6 +90,19 @@ campaignSchema.pre("save", function () {
   }
 });
 
+// Ajoute ceci à ton campaignSchema
+campaignSchema.virtual("mortalityRate").get(function () {
+  if (!this.initialCount || this.initialCount === 0) return 0;
+  return ((this.losses / this.initialCount) * 100).toFixed(2);
+});
+
+// Seuil d'alerte (tu peux le rendre configurable par département plus tard)
+const MORTALITY_THRESHOLD = 5; 
+
+campaignSchema.virtual("hasAlert").get(function () {
+  return parseFloat(this.mortalityRate) >= MORTALITY_THRESHOLD;
+});
+
 campaignSchema.set("toJSON", { virtuals: true });
 campaignSchema.set("toObject", { virtuals: true }); // Important si tu fais des console.log ou manipules des objets simples
 
