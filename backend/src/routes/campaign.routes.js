@@ -1,8 +1,10 @@
 import express from "express";
 import * as campaignController from "../controllers/campaign.controller.js";
+import {getDashboardStats} from "../services/campaign.service.js";
 
 const router = express.Router();
 
+router.get("/dashboard-stats",getDashboardStats);
 // CRUD
 router.post("/", campaignController.create);
 router.get("/", campaignController.getAll);

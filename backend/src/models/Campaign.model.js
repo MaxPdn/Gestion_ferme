@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+const lossEntrySchema = new mongoose.Schema({
+  quantity: { type: Number, required: true },
+  date: { type: Date, default: Date.now } // Enregistre l'instant T
+});
+
 const campaignSchema = new mongoose.Schema(
   {
     name: {
@@ -39,6 +44,8 @@ const campaignSchema = new mongoose.Schema(
       return this.initialCount;
     }
     },
+
+    lossHistory: [lossEntrySchema],
 
     losses: {
       type: Number,
