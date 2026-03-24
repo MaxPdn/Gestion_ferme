@@ -16,7 +16,7 @@ import AppLayout from './layout/AppLayout.vue';
     </div>
   </Transition>
 
- <AppLayout/>
+
 </template>
 
 <style>
