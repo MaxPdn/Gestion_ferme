@@ -116,7 +116,7 @@ const handleDelete = async (id, name) => {
 
       <button
         @click="goToCreate"
-        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
+        class="flex items-center gap-2 h-full bg-[#1e293b] hover:h-full bg-[#1e293b] text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -246,7 +246,7 @@ const handleDelete = async (id, name) => {
                     class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"
                   >
                     <div
-                      class="h-full bg-blue-500 rounded-full transition-all duration-700 ease-out"
+                      class="h-full bg-blue-900 rounded-full transition-all duration-700 ease-out"
                       :style="{ width: getProgress(campaign) + '%' }"
                     ></div>
                   </div>

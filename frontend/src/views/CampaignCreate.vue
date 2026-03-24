@@ -86,7 +86,7 @@ const handleSubmit = async () => {
         <transition enter-active-class="animate-fade-in-down" leave-active-class="opacity-0 transition duration-300">
           <div v-if="error" class="flex items-center gap-3 p-4 rounded-xl bg-red-50/50 border border-red-100 text-red-600">
             <span class="text-lg">⚠️</span>
-            <p class="text-sm font-bold">{{ error }}</p>
+            <p class="text-sm font-bold">Campagne déjà existante</p>
           </div>
         </transition>
 
@@ -168,7 +168,7 @@ const handleSubmit = async () => {
         <button
           @click="handleSubmit"
           :disabled="loading || !form.department"
-          class="group w-full flex items-center justify-center gap-3 py-5 font-black text-white bg-blue-600 rounded-1xxl shadow-xl shadow-blue-500/30 transition-all hover:bg-blue-700 active:scale-[0.98] disabled:bg-slate-200 disabled:shadow-none overflow-hidden"
+          class="group w-full flex items-center justify-center gap-3 py-5 font-black text-white h-full bg-[#1e293b] rounded-1xxl shadow-xl shadow-blue-500/30 transition-all hover:h-full bg-[#1e293b] active:scale-[0.98] disabled:bg-slate-200 disabled:shadow-none overflow-hidden"
         >
           <div v-if="!loading" class="flex items-center gap-3">
             <span>Lancer la campagne</span>

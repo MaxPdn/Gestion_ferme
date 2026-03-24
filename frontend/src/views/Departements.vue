@@ -164,13 +164,13 @@ onMounted(fetchData);
             v-model="newDeptName"
             type="text"
             placeholder="Nouveau département..."
-            class="flex-1 md:w-64 px-4 py-2.5 rounded-xl border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-semibold"
+            class="flex-1 md:w-64 px-4 py-2.5 rounded-xl border border-slate-200 bg-white shadow-sm focus:ring-2 focus:'h-full [#1e293b] focus:'h-full [#1e293b] outline-none transition-all text-sm font-semibold"
             @keyup.enter="handleCreate"
           />
           <button
             @click="handleCreate"
             :disabled="creating || !newDeptName"
-            class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-sm"
+            class="'h-full bg-[#1e293b] hover:'h-full bg-[#1e293b] disabled:bg-slate-200 text-white font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-sm"
           >
             {{ creating ? "..." : "Ajouter" }}
           </button>
@@ -216,8 +216,8 @@ onMounted(fetchData);
                 :class="[
                   'text-[16px] font-bold truncate text-sm transition-colors',
                   selectedDeptId === dept._id
-                    ? 'text-blue-600'
-                    : 'text-slate-600',
+                    ? 'h-full [#1e293b]'
+                    : 'text-slate-400',
                 ]"
               >
                 {{ dept.name }}

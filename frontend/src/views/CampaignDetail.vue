@@ -242,7 +242,7 @@ const handleStatusChange = async (status) => {
               />
               <button
                 @click="handleAddLoss"
-                class="bg-red-500 hover:bg-red-600 text-white font-bold px-6 rounded-xl transition-colors"
+                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
               >
                 Valider
               </button>
@@ -262,7 +262,7 @@ const handleStatusChange = async (status) => {
               />
               <button
                 @click="handleAddSale"
-                class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 rounded-xl transition-colors"
+                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
               >
                 Valider
               </button>
