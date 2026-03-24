@@ -62,10 +62,27 @@ const campaignSchema = new mongoose.Schema(
 );
 
 // 🔥 logique automatique
+campaignSchema.virtual("statusDynamic").get(function () {
+  const now = new Date();
+
+  const start = this.startDate ? new Date(this.startDate) : null;
+  const end = this.endDate ? new Date(this.endDate) : null;
+
+  if (this.currentCount <= 0) return "completed";
+
+  if (!start) return "preparation";
+
+  if (now < start) return "preparation";
+
+  if (end && now > end) return "completed";
+
+  return "active";
+});
+
 campaignSchema.pre("save", function () {
   if (this.isNew) {
     this.currentCount = this.initialCount;
   }
 });
-
+campaignSchema.set("toJSON", { virtuals: true });
 export default mongoose.model("Campaign", campaignSchema);

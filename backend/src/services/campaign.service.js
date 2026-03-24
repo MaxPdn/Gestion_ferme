@@ -36,7 +36,8 @@ export const addLosses = async (id, quantity) => {
   campaign.losses += quantity;
   campaign.currentCount -= quantity;
 
-  return await campaign.save();
+  await campaign.save();
+  return campaign;
 };
 
 export const addSales = async (id, quantity) => {
@@ -51,7 +52,8 @@ export const addSales = async (id, quantity) => {
   campaign.sold += quantity;
   campaign.currentCount -= quantity;
 
-  return await campaign.save();
+  await campaign.save();
+  return campaign;
 };
 
 export const changeStatus = async (id, status) => {
