@@ -6,6 +6,7 @@ import CampaignDetail from "../views/CampaignDetail.vue";
 import Departements from "@/views/Departements.vue";
 import Alert from "@/views/Alert.vue";
 import Alimentation from "@/views/Alimentation.vue";
+import Stock from "@/views/Stock.vue";
 
 import Login from "../views/Login.vue";
 import Home from "../views/Home.vue";
@@ -24,6 +25,7 @@ const routes = [
       { path: "/departements", component: Departements },
       { path: "/alerts", component: Alert },
       { path: "/alimentation", component: Alimentation },
+      { path: "/stocks", component: Stock },
       { path: "", component: Home },
       {
         path: "users",

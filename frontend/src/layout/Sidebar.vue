@@ -36,7 +36,7 @@ const menuItems = [
     label: "Financier",
     roles: ["Admin", "Gestionnaire"],
   },
-  { icon: Package, label: "Stocks" },
+  { icon: Package, label: "Stocks", path: "/stocks" },
   { icon: Bell, label: "Alertes", path: "/alerts" },
   { icon: Users, label: "Utilisateurs", path: "/home/users", role: "Admin" },
 ].filter((item) => {
