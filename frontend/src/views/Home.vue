@@ -110,69 +110,69 @@ const chartOptions = ref({
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e293b]"></div>
   </div>
 
-  <div v-else class="min-h-screen font-serif bg-slate-50 p-6 md:p-10 font-sans antialiased text-slate-900">
+  <div v-else class="min-h-screen font-serif bg-slate-50 p-4 md:p-10 font-sans antialiased text-slate-900">
     
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
       <div>
-        <h2 class="text-slate-900 font-bold uppercase text-[16px]">Tableau de Bord</h2>
-        <h1 class="text-4xl font-black text-[#1e293b] tracking-tight">Bonjour, Admin 👋</h1>
-        <p class="text-slate-500 font-medium mt-1">{{ currentDate }} • <span class="text-[#F97316]">TerraCore</span></p>
+        <h2 class="text-slate-500 font-bold uppercase text-[12px] tracking-widest">Tableau de Bord</h2>
+        <h1 class="text-2xl md:text-4xl font-black text-[#1e293b] tracking-tight">Bonjour, Admin 👋</h1>
+        <p class="text-slate-400 font-medium mt-1 text-sm md:text-base">{{ currentDate }} • <span class="text-[#F97316]">TerraCore</span></p>
       </div>
       
-      <div class="flex items-center gap-3">
-        <button @click="isModalOpen = true" class="bg-[#1e293b] text-white font-bold px-6 py-3 rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center gap-2 active:scale-95">
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+        <button @click="isModalOpen = true" class="w-full sm:w-auto bg-[#1e293b] text-white font-bold px-6 py-4 md:py-3 rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 active:scale-95">
           <span class="text-xl">+</span> 
-          <span class="hidden sm:inline">Déclarer une perte</span>
+          <span>Déclarer une perte</span>
         </button>
 
-        <button @click="logout" class="group flex items-center gap-3 bg-white border border-slate-200 text-slate-600 font-bold px-6 py-3 rounded-2xl hover:bg-red-50 hover:text-red-600 transition-all shadow-sm active:scale-95">
+        <button @click="logout" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-600 font-bold px-6 py-4 md:py-3 rounded-2xl hover:bg-red-50 hover:text-red-600 transition-all shadow-sm active:scale-95">
           <span>Déconnexion</span>
         </button>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      <div v-for="stat in stats" :key="stat.label" class="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white transition-all hover:translate-y-[-4px]">
-        <p class="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-3">{{ stat.label }}</p>
-        <div class="flex items-end justify-between">
-          <span class="text-3xl font-[900] text-[#1e293b]">{{ stat.value }}</span>
-          <span :class="stat.trendColor" class="text-[10px] font-black px-3 py-1 rounded-full bg-opacity-10 mb-1">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
+      <div v-for="stat in stats" :key="stat.label" class="bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white transition-all hover:translate-y-[-4px]">
+        <p class="text-slate-400 font-black uppercase text-[9px] md:text-[10px] tracking-widest mb-2 md:mb-3 leading-tight">{{ stat.label }}</p>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-1">
+          <span class="text-2xl md:text-3xl font-[900] text-[#1e293b]">{{ stat.value }}</span>
+          <span :class="stat.trendColor" class="text-[9px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full bg-opacity-10 w-fit">
             {{ stat.trend }}
           </span>
         </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
       
-      <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
-        <div class="flex justify-between items-center mb-8">
-          <h3 class="text-xl font-black text-[#1e293b]">Évolution de la mortalité</h3>
+      <div class="lg:col-span-2 bg-white p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
+        <div class="flex justify-between items-center mb-6 md:mb-8">
+          <h3 class="text-lg md:text-xl font-black text-[#1e293b]">Évolution de la mortalité</h3>
         </div>
-        <div class="h-72">
+        <div class="h-60 md:h-72">
           <apexchart width="100%" height="100%" :options="chartOptions" :series="series"></apexchart>
         </div>
       </div>
 
-      <div class="bg-white p-8 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
-        <h3 class="text-xl font-black text-[#1e293b] mb-8">Urgences</h3>
-        <div class="space-y-4">
+      <div class="bg-white p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
+        <h3 class="text-lg md:text-xl font-black text-[#1e293b] mb-6 md:mb-8">Urgences</h3>
+        <div class="space-y-3 md:space-y-4">
           <div v-for="alert in topAlerts" :key="alert.id" 
                @click="router.push(`/campaign/${alert.id}`)"
-               class="group flex items-center justify-between p-5 bg-slate-50 rounded-[2rem] border border-transparent hover:border-red-100 hover:bg-red-50/50 transition-all cursor-pointer">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 flex items-center justify-center bg-white rounded-2xl shadow-sm">
+               class="group flex items-center justify-between p-4 md:p-5 bg-slate-50 rounded-[1.5rem] md:rounded-[2rem] border border-transparent hover:border-red-100 hover:bg-red-50/50 transition-all cursor-pointer">
+            <div class="flex items-center gap-3 md:gap-4">
+              <div class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white rounded-xl md:rounded-2xl shadow-sm flex-shrink-0">
                 <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
               </div>
-              <div>
-                <p class="font-bold text-slate-800 text-sm">{{ alert.building }}</p>
-                <p class="text-[10px] font-black text-slate-400 uppercase">Seuil critique</p>
+              <div class="min-w-0">
+                <p class="font-bold text-slate-800 text-xs md:text-sm truncate">{{ alert.building }}</p>
+                <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-tight">Seuil critique</p>
               </div>
             </div>
-            <p class="text-red-600 font-[900] text-xl">{{ alert.rate }}%</p>
+            <p class="text-red-600 font-[900] text-lg md:text-xl ml-2">{{ alert.rate }}%</p>
           </div>
 
-          <div v-if="!topAlerts || topAlerts.length === 0" class="text-center py-10">
+          <div v-if="!topAlerts || topAlerts.length === 0" class="text-center py-8">
             <p class="text-slate-400 font-bold text-sm italic">Tout est sous contrôle ✅</p>
           </div>
         </div>
@@ -181,14 +181,14 @@ const chartOptions = ref({
 
     <Transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-[3rem] p-10 w-full max-w-md shadow-2xl border border-white">
-          <h3 class="text-2xl font-black text-[#1e293b] mb-2">Nouvelle Perte</h3>
-          <p class="text-slate-400 text-sm mb-8 font-medium">Mise à jour de l'inventaire en direct.</p>
+        <div class="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 w-full max-w-md shadow-2xl border border-white max-h-[90vh] overflow-y-auto">
+          <h3 class="text-xl md:text-2xl font-black text-[#1e293b] mb-2">Nouvelle Perte</h3>
+          <p class="text-slate-400 text-sm mb-6 md:mb-8 font-medium leading-relaxed">Mise à jour de l'inventaire en direct.</p>
           
-          <div class="space-y-6">
+          <div class="space-y-4 md:space-y-6">
             <div>
               <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Sélectionner le bâtiment</label>
-              <select v-model="selectedCampaign" class="w-full bg-slate-50 border-none rounded-2xl p-4 mt-2 outline-none focus:ring-2 focus:ring-slate-100 font-bold text-slate-700">
+              <select v-model="selectedCampaign" class="w-full bg-slate-50 border-none rounded-xl md:rounded-2xl p-4 mt-2 outline-none focus:ring-2 focus:ring-slate-100 font-bold text-slate-700 text-sm md:text-base">
                 <option value="" disabled>Choisir un lot...</option>
                 <option v-for="c in allCampaigns" :key="c._id" :value="c._id">{{ c.name }}</option>
               </select>
@@ -196,13 +196,13 @@ const chartOptions = ref({
             
             <div>
               <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Nombre de têtes</label>
-              <input v-model="lossQuantity" type="number" :max="allCampaigns.find(c => c._id === selectedCampaign)?.currentCount" min="1" class="w-full bg-slate-50 border-none rounded-2xl p-4 mt-2 outline-none focus:ring-2 focus:ring-slate-100 font-bold text-slate-700" />
+              <input v-model="lossQuantity" type="number" class="w-full bg-slate-50 border-none rounded-xl md:rounded-2xl p-4 mt-2 outline-none focus:ring-2 focus:ring-slate-100 font-bold text-slate-700 text-sm md:text-base" />
             </div>
           </div>
 
-          <div class="flex gap-4 mt-10">
-            <button @click="isModalOpen = false" class="flex-1 py-4 font-bold text-slate-400 hover:text-slate-600 transition-colors">Annuler</button>
-            <button @click="submitLoss" class="flex-1 py-4 font-bold bg-red-500 text-white rounded-2xl hover:bg-red-600 transition-all shadow-lg shadow-red-100 active:scale-95">Confirmer</button>
+          <div class="flex flex-col sm:flex-row gap-2 md:gap-4 mt-8 md:mt-10">
+            <button @click="isModalOpen = false" class="order-2 sm:order-1 flex-1 py-4 font-bold text-slate-400 hover:text-slate-600 transition-colors">Annuler</button>
+            <button @click="submitLoss" class="order-1 sm:order-2 flex-1 py-4 font-bold bg-red-500 text-white rounded-xl md:rounded-2xl hover:bg-red-600 transition-all shadow-lg shadow-red-100 active:scale-95">Confirmer</button>
           </div>
         </div>
       </div>
