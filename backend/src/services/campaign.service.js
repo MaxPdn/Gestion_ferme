@@ -50,7 +50,7 @@ export const addSales = async (id, quantity) => {
   if (!campaign) throw new Error("Campagne introuvable");
 
   // 🔥 NOUVELLE SÉCURITÉ : Vérification du statut
-  if (campaign.status !== "En cours") {
+  if (campaign.status !== "active") {
     throw new Error(
       `Vente impossible : La campagne est actuellement '${campaign.status}'. Elle doit être 'En cours'.`,
     );

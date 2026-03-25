@@ -273,6 +273,28 @@ const handleStatusChange = async (status) => {
         <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
           <div
             class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
+          >
+            <h3 class="font-bold text-gray-800 mb-4">Signaler des Pertes</h3>
+
+            <div class="flex gap-2">
+              <input
+                v-model="lossInput"
+                type="number"
+                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all"
+                placeholder="Ex: 2"
+              />
+
+              <button
+                @click="handleAddLoss"
+                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
+              >
+                Valider
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
             :class="{
               'opacity-50 grayscale-[0.5]': campaign.status !== 'active',
             }"
@@ -296,26 +318,6 @@ const handleStatusChange = async (status) => {
               <button
                 @click="handleAddSale"
                 :disabled="campaign.status !== 'active'"
-                class="h-full bg-[#1e293b] text-white font-bold px-6 rounded-xl transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                Valider
-              </button>
-            </div>
-          </div>
-
-          <div
-            class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
-          >
-            <h3 class="font-bold text-gray-800 mb-4">Enregistrer des Ventes</h3>
-            <div class="flex gap-2">
-              <input
-                v-model="saleInput"
-                type="number"
-                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all"
-                placeholder="Ex: 5"
-              />
-              <button
-                @click="handleAddSale"
                 class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
               >
                 Valider
