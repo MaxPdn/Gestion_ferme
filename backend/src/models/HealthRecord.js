@@ -26,11 +26,7 @@ const healthRecordSchema = new mongoose.Schema({
   },
   medication: {
     name: String,
-    dosage: String,
-    stockId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Stock'
-    }
+    dosage: String
   },
   severity: {
     type: String,

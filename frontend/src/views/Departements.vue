@@ -143,303 +143,236 @@ const handleDelete = async (id, name) => {
 };
 
 onMounted(fetchData);
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XOF',
+    minimumFractionDigits: 0
+  }).format(amount);
+};
 </script>
 
 <template>
-  <div class="p-8 font-serif bg-[#F8FAFC] min-h-screen font-sans">
-    <div class="max-w-7xl mx-auto">
-      <header
-        class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4"
-      >
-        <div>
-          <h1 class="text-3xl font-black text-slate-900 tracking-tight">
-            Configuration
-          </h1>
-          <p class="text-slate-500 font-medium">
-            Gérez vos zones de production et flux actifs.
-          </p>
+  <div class="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <div class="flex flex-col gap-4">
+          <div>
+            <h1 class="heading-1 text-slate-800">Gestion des Départements</h1>
+            <p class="text-small text-slate-500 mt-2">Gérez vos zones de production et leurs campagnes</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2 w-full">
+            <input
+              v-model="newDeptName"
+              type="text"
+              placeholder="Nouveau département..."
+              class="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm font-semibold"
+              @keyup.enter="handleCreate"
+            />
+            <button
+              @click="handleCreate"
+              :disabled="creating || !newDeptName"
+              class="btn bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white font-semibold self-start sm:self-auto"
+            >
+              {{ creating ? "..." : "Ajouter" }}
+            </button>
+          </div>
         </div>
-        <div class="flex gap-2 w-full md:w-auto">
-          <input
-            v-model="newDeptName"
-            type="text"
-            placeholder="Nouveau département..."
-            class="flex-1 md:w-64 px-4 py-2.5 rounded-xl border border-slate-200 bg-white shadow-sm focus:ring-2 focus:'h-full [#1e293b] focus:'h-full [#1e293b] outline-none transition-all text-sm font-semibold"
-            @keyup.enter="handleCreate"
-          />
-          <button
-            @click="handleCreate"
-            :disabled="creating || !newDeptName"
-            class="'h-full bg-[#1e293b] hover:'h-full bg-[#1e293b] disabled:bg-slate-200 text-white font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-sm"
-          >
-            {{ creating ? "..." : "Ajouter" }}
-          </button>
-        </div>
-      </header>
-      <div class="grid grid-cols-12 gap-8 flex-col h-[600px] overflow-hidden">
-        <aside class="col-span-12 lg:col-span-4 space-y-3">
-          <h2
-            class="text-[18px] font-bold text-slate-900"
-          >
-            Départements
-          </h2>
+      </div>
+    </div>
 
-          <div
-            v-for="dept in departments"
-            :key="dept._id"
-            @click="selectedDeptId = dept._id"
-            :class="[
-              'group p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between',
-              selectedDeptId === dept._id
-                ? 'bg-white border-blue-600 shadow-md ring-1 ring-blue-600/5'
-                : 'bg-white/60 border-transparent text-slate-500 hover:bg-white hover:border-slate-200',
-            ]"
-          >
-            <div class="flex items-center gap-4 overflow-hidden">
-              <span class="text-xl opacity-80">
+    <!-- Contenu principal -->
+    <main class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+      <!-- État de chargement -->
+      <div v-if="loading" class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-b-orange-500"></div>
+      </div>
 
-<svg fill="#000000" width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<path d="M5.04146 3C5.22009 2.6906 5.55022 2.5 5.90748 2.5L9.75278 2.5C10.11 2.5 10.4402 2.6906 10.6188 3L12.5415 6.33013C12.7201 6.63953 12.7201 7.02073 12.5415 7.33013L10.6188 10.6603C10.4402 10.9697 10.11 11.1603 9.75278 11.1603H5.90748C5.55022 11.1603 5.22009 10.9697 5.04146 10.6603L3.11881 7.33013C2.94017 7.02073 2.94017 6.63953 3.11881 6.33013L5.04146 3Z"/>
-<path d="M5.1216 13.2272C5.30023 12.9178 5.63036 12.7272 5.98762 12.7272H9.83292C10.1902 12.7272 10.5203 12.9178 10.6989 13.2272L12.6216 16.5574C12.8002 16.8668 12.8002 17.248 12.6216 17.5574L10.6989 20.8875C10.5203 21.1969 10.1902 21.3875 9.83292 21.3875H5.98762C5.63036 21.3875 5.30023 21.1969 5.1216 20.8875L3.19895 17.5574C3.02031 17.248 3.02031 16.8668 3.19895 16.5574L5.1216 13.2272Z"/>
-<path d="M14.1216 8.22723C14.3002 7.91783 14.6304 7.72723 14.9876 7.72723L18.8329 7.72723C19.1902 7.72723 19.5203 7.91783 19.6989 8.22723L21.6216 11.5574C21.8002 11.8668 21.8002 12.248 21.6216 12.5574L19.6989 15.8875C19.5203 16.1969 19.1902 16.3875 18.8329 16.3875H14.9876C14.6304 16.3875 14.3002 16.1969 14.1216 15.8875L12.1989 12.5574C12.0203 12.248 12.0203 11.8668 12.1989 11.5574L14.1216 8.22723Z"/>
-</svg></span>
-
-              <input
-                v-if="editingId === dept._id"
-                v-model="editedName"
-                @click.stop
-                type="text"
-                class="bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg focus:outline-none font-bold text-slate-800 w-full text-sm"
-              />
-              <span
-                v-else
-                :class="[
-                  'text-[16px] font-bold truncate text-sm transition-colors',
-                  selectedDeptId === dept._id
-                    ? 'h-full [#1e293b]'
-                    : 'text-slate-400',
-                ]"
-              >
-                {{ dept.name }}
-              </span>
+      <!-- Grille responsive -->
+      <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Sidebar Départements -->
+        <aside class="lg:col-span-1 order-1 lg:order-none">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-6">
+            <h2 class="heading-3 text-slate-800 mb-4">Départements</h2>
+            
+            <div v-if="departments.length === 0" class="text-center py-8">
+              <p class="text-small text-slate-500">Aucun département</p>
             </div>
 
-            <div class="flex gap-1 shrink-0 ml-4" @click.stop>
-              <template v-if="editingId === dept._id">
-                <button
-                  @click="saveEdit(dept._id)"
-                  class="p-1.5 hover:bg-emerald-50 rounded-lg text-emerald-600"
-                >
-                  Edit
-                </button>
-                <button
-                  @click="cancelEdit"
-                  class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
-                >
-                  Delete
-                </button>
-              </template>
-              <template v-else>
-                <button
-                  @click="startEdit(dept)"
-                  class="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-slate-100 transition text-slate-400 hover:text-blue-600"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+            <div v-else class="space-y-2 max-h-96 overflow-y-auto">
+              <button
+                v-for="dept in departments"
+                :key="dept._id"
+                @click="selectedDeptId = dept._id"
+                :class="[
+                  'w-full text-left p-3 rounded-lg border-2 transition-all flex items-center justify-between gap-2',
+                  selectedDeptId === dept._id
+                    ? 'bg-orange-50 border-orange-500 shadow-sm'
+                    : 'bg-slate-50 border-transparent hover:border-slate-200'
+                ]"
+              >
+                <div class="min-w-0 flex-1">
+                  <input
+                    v-if="editingId === dept._id"
+                    v-model="editedName"
+                    @click.stop
+                    type="text"
+                    class="w-full bg-white border border-slate-200 px-2 py-1 rounded text-sm font-bold focus:outline-none focus:border-orange-500"
+                  />
+                  <span
+                    v-else
+                    :class="['text-sm font-bold truncate block', selectedDeptId === dept._id ? 'text-orange-700' : 'text-slate-700']"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                    />
-                  </svg>
-                </button>
-                <button
-                  @click="handleDelete(dept._id, dept.name)"
-                  class="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 transition text-slate-300 hover:text-red-500"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                </button>
-              </template>
+                    {{ dept.name }}
+                  </span>
+                </div>
+
+                <div class="flex gap-1 flex-shrink-0" @click.stop>
+                  <template v-if="editingId === dept._id">
+                    <button
+                      @click="saveEdit(dept._id)"
+                      class="p-1 hover:bg-green-100 text-green-600 rounded transition-colors"
+                      title="Valider"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      @click="cancelEdit"
+                      class="p-1 hover:bg-slate-100 text-slate-400 rounded transition-colors"
+                      title="Annuler"
+                    >
+                      ✕
+                    </button>
+                  </template>
+                  <template v-else>
+                    <button
+                      @click="startEdit(dept)"
+                      class="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-slate-100 text-slate-600 transition-all"
+                      title="Éditer"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      @click="handleDelete(dept._id, dept.name)"
+                      class="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-100 text-red-600 transition-all"
+                      title="Supprimer"
+                    >
+                      🗑️
+                    </button>
+                  </template>
+                </div>
+              </button>
             </div>
           </div>
         </aside>
 
-        <main class="col-span-12 lg:col-span-8">
-          <div
-            class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[600px] overflow-hidden"
-          >
-            <div v-if="selectedDeptId" class="flex flex-col h-full">
-              <div
-                class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0"
-              >
-                <h2
-                  class="text-lg font-bold text-slate-800"
-                >
-                  Campagnes du département
-                  <span class="text-blue-600 not-italic">{{
-                    departments.find((d) => d._id === selectedDeptId)?.name
-                  }}</span>
-                </h2>
-                <span
-                  class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold text-[12px] uppercase tracking-tighter"
-                >
-                  Nombre total : {{ filteredCampaigns.length }}
+        <!-- Contenu Principal Campagnes -->
+        <main v-if="selectedDeptId" class="lg:col-span-3 order-2 lg:order-none">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <!-- Header du département -->
+            <div class="p-4 md:p-6 border-b border-slate-200 bg-gradient-to-r from-orange-50 to-white">
+              <h2 class="heading-2 text-slate-800">
+                Campagnes - 
+                <span class="text-orange-600">
+                  {{ departments.find((d) => d._id === selectedDeptId)?.name }}
                 </span>
-              </div>
-
-              <div
-                v-if="filteredCampaigns.length > 0"
-                class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-50"
-              >
-                <div
-                  v-for="camp in filteredCampaigns"
-                  :key="camp._id"
-                  class="p-6 hover:bg-slate-50/80 transition-all flex items-center justify-between group"
-                >
-                  <div>
-                    <h4
-                      class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors"
-                    >
-                      {{ camp.name }}
-                    </h4>
-                    <div
-                      class="flex gap-6 mt-2 text-[14px] text-slate-900 font-bold"
-                    >
-                      <span class="flex items-center gap-1.5"
-                        ><i class="opacity-100 text-[#F97316]">
-  <svg 
-    class="fill-current" 
-    width="20px" height="20px" viewBox="0 0 64 64" 
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M32,0c-8.477,0-16.178,3.302-21.903,8.683L9,7.585V4.999c0-0.168-0.051-0.318-0.124-0.457 C8.862,4.479,8.827,4.411,8.747,4.331L4.708,0.292H4.707C4.526,0.11,4.276-0.001,4-0.001c-0.553,0-1,0.447-1,1v2H1 c-0.553,0-1,0.447-1,1c0,0.276,0.112,0.526,0.293,0.707v0.001l3.999,3.998c0.001,0.001,0.001,0.001,0.001,0.001l0.041,0.041 c0.08,0.08,0.147,0.115,0.21,0.129C4.682,8.948,4.833,8.999,5,8.999h2.586l1.097,1.098C3.303,15.821,0,23.522,0,32 c0,17.673,14.327,32,32,32s32-14.327,32-32S49.673,0,32,0z M32,59.999c-15.464,0-28-12.536-28-28c0-7.372,2.854-14.074,7.511-19.075 l2.828,2.829C10.405,20.026,8,25.731,8,31.999c0,13.255,10.745,24,24,24s24-10.745,24-24s-10.745-24-24-24 c-6.268,0-11.972,2.404-16.247,6.34l-2.828-2.829c5-4.657,11.703-7.511,19.075-7.511c15.464,0,28,12.536,28,28 S47.464,59.999,32,59.999z M20.013,21.426C17.523,24.247,16,27.94,16,31.999c0,8.837,7.163,16,16,16s16-7.163,16-16s-7.163-16-16-16 c-4.059,0-7.752,1.523-10.573,4.013l-2.828-2.828c3.548-3.212,8.238-5.185,13.401-5.185c11.046,0,20,8.954,20,20s-8.954,20-20,20 s-20-8.954-20-20c0-5.163,1.973-9.854,5.185-13.401L20.013,21.426z M25.687,27.1C24.633,28.454,24,30.151,24,32c0,4.418,3.582,8,8,8 s8-3.582,8-8s-3.582-8-8-8c-1.848,0-3.545,0.633-4.899,1.686l-2.845-2.845c2.091-1.77,4.791-2.842,7.744-2.842 c6.627,0,12,5.373,12,12s-5.373,12-12,12s-12-5.373-12-12c0-2.953,1.072-5.653,2.842-7.744L25.687,27.1z M31.293,32.706 c0.391,0.391,1.023,0.391,1.414,0s0.391-1.023,0-1.414l-2.727-2.727C30.575,28.215,31.26,28,32,28c2.209,0,4,1.791,4,4s-1.791,4-4,4 s-4-1.791-4-4c0-0.741,0.215-1.426,0.566-2.021L31.293,32.706z"/>
-  </svg>
-</i> Objectif :
-                        <span class="text-slate-600">{{
-                          camp.objective
-                        }}</span></span
-                      >
-                      <span class="flex items-center gap-1.5"
-                        ><i class="flex items-center justify-center text-slate-400 hover:text-[#F97316] transition-colors duration-200">
-  <svg 
-    class="fill-current" 
-    width="30px" height="30px" 
-    viewBox="0 0 32 32" 
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <title>graph</title>
-    <path d="M0 25.406h22.406v-1.75h-20.656v-17.063h-1.75v18.813zM3.063 21.969h19.25v-13.813l-4.063 3.719-3.781-1.375-4 4.563-4.094-1.469-3.313 3.438v4.938z"></path>
-  </svg>
-</i> Restes :
-                        <span class="text-emerald-600">{{
-                          camp.currentCount
-                        }}</span></span
-                      >
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-4">
-                    <span
-                      :class="[
-                        'px-3 py-1 rounded text-[12px] font-black uppercase tracking-tighter',
-                        camp.status === 'active'
-                          ? 'bg-emerald-100 text-emerald-600'
-                          : 'bg-slate-100 text-slate-500',
-                      ]"
-                    >
-                      {{ camp.status }}
-                    </span>
-                    <router-link
-                      :to="'/campaign/' + camp._id"
-                      class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-100 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M14 5l7 7m0 0l-7 7m7-7H3"
-                        />
-                      </svg>
-                    </router-link>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                v-else
-                class="flex-1 flex flex-col items-center justify-center text-center p-10"
-              >
-                <div
-                  class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-3xl mb-4 grayscale text-slate-300 italic"
-                >
-                  🍃
-                </div>
-                <p class="text-slate-400 font-bold italic text-sm">
-                  Aucune campagne dans cette zone.
-                </p>
-                <router-link
-                  to="/create"
-                  class="mt-4 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline"
-                >
-                  + Créer un flux
-                </router-link>
-              </div>
+              </h2>
+              <p class="text-small text-slate-500 mt-2">
+                {{ filteredCampaigns.length }} campagne(s)
+              </p>
             </div>
 
-            <div
-              v-else
-              class="flex flex-col items-center justify-center h-full text-slate-300"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-12 w-12 mb-4 opacity-10"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"
-                />
-              </svg>
-              <p
-                class="font-bold uppercase tracking-widest text-[11px] text-slate-400"
-              >
-                Sélectionnez un département à gauche
-              </p>
+            <!-- Contenu Campagnes -->
+            <div>
+              <div v-if="filteredCampaigns.length === 0" class="p-8 text-center">
+                <p class="text-slate-500 mb-4">Aucune campagne pour ce département</p>
+              </div>
+
+              <template v-else>
+                <!-- Desktop: Table -->
+                <div class="hidden md:block overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nom</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Sujets</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Budget</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                      <tr v-for="campaign in filteredCampaigns" :key="campaign._id" class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                          <p class="font-semibold text-slate-800">{{ campaign.name }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                          <span 
+                            :class="[
+                              'px-3 py-1 rounded-lg text-xs font-bold',
+                              campaign.status === 'En cours' ? 'bg-green-100 text-green-700' :
+                              campaign.status === 'En préparation' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-slate-100 text-slate-600'
+                            ]"
+                          >
+                            {{ campaign.status }}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4">
+                          <p class="text-slate-700 font-medium">{{ campaign.objective || 0 }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                          <p class="text-slate-700 font-medium">{{ formatCurrency(campaign.budget || 0) }}</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Mobile: Cards -->
+                <div class="md:hidden p-4 space-y-3">
+                  <div 
+                    v-for="campaign in filteredCampaigns" 
+                    :key="campaign._id" 
+                    class="card"
+                  >
+                  <div class="flex items-start justify-between mb-3">
+                    <h3 class="heading-3 text-slate-800">{{ campaign.name }}</h3>
+                    <span 
+                      :class="[
+                        'px-2 py-1 rounded text-xs font-bold flex-shrink-0',
+                        campaign.status === 'En cours' ? 'bg-green-100 text-green-700' :
+                        campaign.status === 'En préparation' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-slate-100 text-slate-600'
+                      ]"
+                    >
+                      {{ campaign.status }}
+                    </span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-3 rounded-lg">
+                      <p class="text-xs text-slate-500 font-semibold mb-1">Objectif</p>
+                      <p class="text-lg font-bold text-slate-800">{{ campaign.objective || 0 }}</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg">
+                      <p class="text-xs text-slate-500 font-semibold mb-1">Budget</p>
+                      <p class="text-sm font-bold text-orange-600">{{ formatCurrency(campaign.budget || 0) }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </template>
             </div>
           </div>
         </main>
+
+        <!-- Message aucune sélection -->
+        <div v-else class="lg:col-span-3 order-2 lg:order-none card text-center py-12">
+          <p class="text-slate-500 mb-4">Sélectionnez un département pour voir les campagnes</p>
+        </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 

@@ -6,6 +6,7 @@ import CampaignDetail from "../views/CampaignDetail.vue";
 import Departements from "@/views/Departements.vue";
 import Alert from "@/views/Alert.vue";
 import HealthView from "../views/HealthView.vue";
+import FinanceView from "../views/FinanceView.vue";
 
 import Login from "../views/Login.vue";
 import Home from "../views/Home.vue";
@@ -24,6 +25,7 @@ const routes = [
       { path: "/departements", component: Departements },
       { path: "/alerts", component: Alert },
       { path: "/sante", component: HealthView },
+      { path: "/finance", component: FinanceView },
       { path: "", component: Home },
       {
         path: "users",

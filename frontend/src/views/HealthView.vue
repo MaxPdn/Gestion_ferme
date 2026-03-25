@@ -166,272 +166,305 @@ const getTypeColor = (type) => {
 </script>
 
 <template>
-  <div class="p-8 max-w-6xl mx-auto">
+  <div class="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-      <div>
-        <div class="flex items-center gap-3">
-          <h1 class="text-3xl font-bold text-slate-800">Santé & Traitements</h1>
-          <span v-if="isCampaignFound" :class="['px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border', healthStatus.color, healthStatus.bg, healthStatus.color.replace('text', 'border')]">
-            Santé: {{ healthStatus.label }}
-          </span>
-        </div>
-        <p class="text-slate-500 mt-1">
-          <span v-if="isCampaignFound" class="flex items-center gap-2 text-orange-600 font-bold">
-            <CheckCircle2 :size="16" /> Campagne identifiée : {{ campaignSearchName }}
-          </span>
-          <span v-else-if="campaignSearchName && !searchLoading" class="flex items-center gap-2 text-red-400 italic">
-            <XCircle :size="16" /> Campagne introuvable
-          </span>
-          <span v-else class="text-slate-400 italic">Recherchez une campagne pour voir l'historique</span>
-        </p>
-      </div>
-
-      <div class="flex items-center gap-4 w-full md:w-auto">
-        <!-- Input de recherche de campagne -->
-        <div class="relative flex-1 md:w-80">
-          <input 
-            v-model="campaignSearchName"
-            type="text"
-            placeholder="Saisir le nom de la campagne..."
-            class="w-full bg-white border border-slate-200 rounded-xl px-11 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-orange-500 transition-all shadow-sm"
-          />
-          <Search :size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <div v-if="searchLoading" class="absolute right-4 top-1/2 -translate-y-1/2">
-            <div class="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
-
-        <button 
-          @click="showModal = true"
-          :disabled="!isCampaignFound"
-          class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-orange-500/20 disabled:shadow-none"
-        >
-          <Plus :size="20" />
-          Nouvel événement
-        </button>
-      </div>
-    </div>
-
-    <!-- Stats Rapides -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <div class="flex items-center gap-4">
-          <div class="p-3 bg-red-50 rounded-xl text-red-500">
-            <AlertTriangle :size="24" />
-          </div>
-          <div>
-            <p class="text-sm text-slate-500 font-medium">Alertes Actives</p>
-            <p class="text-2xl font-bold text-slate-800">{{ activeAlertsCount }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <div class="flex items-center gap-4">
-          <div class="p-3 bg-blue-50 rounded-xl text-blue-500">
-            <Syringe :size="24" />
-          </div>
-          <div>
-            <p class="text-sm text-slate-500 font-medium">Vaccins</p>
-            <p class="text-2xl font-bold text-slate-800">{{ vaccinationCount }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <div class="flex items-center gap-4">
-          <div class="p-3 bg-orange-50 rounded-xl text-orange-500">
-            <Calendar :size="24" />
-          </div>
-          <div>
-            <p class="text-sm text-slate-500 font-medium">Dernier Traitement</p>
-            <p class="text-2xl font-bold text-slate-800">{{ lastTreatmentLabel }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <div class="flex items-center gap-4">
-          <div :class="['p-3 rounded-xl', activeWithdrawalCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-green-50 text-green-600']">
-            <AlertTriangle :size="24" />
-          </div>
-          <div>
-            <p class="text-sm text-slate-500 font-medium">Délai Attente Actif</p>
-            <p class="text-2xl font-bold text-slate-800">{{ activeWithdrawalCount }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Timeline des records -->
-    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-      <!-- Filtres -->
-      <div class="px-6 py-4 border-b border-slate-50 flex items-center gap-2 overflow-x-auto">
-        <button 
-          v-for="filter in [
-            { id: 'all', label: 'Tout' },
-            { id: 'maladie', label: 'Maladies' },
-            { id: 'vaccination', label: 'Vaccinations' },
-            { id: 'observation', label: 'Observations' }
-          ]" 
-          :key="filter.id"
-          @click="filterType = filter.id"
-          :class="[
-            'px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap',
-            filterType === filter.id ? 'bg-orange-500 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-          ]"
-        >
-          {{ filter.label }}
-        </button>
-      </div>
-
-      <div v-if="healthStore.loading" class="p-20 text-center text-slate-400">
-        Chargement de l'historique...
-      </div>
-      
-      <div v-else-if="filteredRecords.length === 0" class="p-20 text-center text-slate-400">
-        Aucun événement trouvé pour ce filtre.
-      </div>
-
-      <div v-else class="divide-y divide-slate-50">
-        <div v-for="record in filteredRecords" :key="record._id" class="p-6 hover:bg-slate-50/50 transition-colors group">
-          <div class="flex gap-6">
-            <!-- Icone & Type -->
-            <div :class="['p-4 rounded-2xl h-fit', getTypeColor(record.type)]">
-              <component :is="getIcon(record.type)" :size="24" />
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <div class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 class="heading-1 text-slate-800">Santé & Traitements</h1>
+              <p class="text-small text-slate-500 mt-1">Suivez l'historique médical de vos campagnes</p>
             </div>
+            <div v-if="isCampaignFound" :class="['px-3 py-2 rounded-full text-xs font-bold uppercase tracking-widest border', healthStatus.color, healthStatus.bg]">
+              {{ healthStatus.label }}
+            </div>
+          </div>
 
-            <!-- Content -->
-            <div class="flex-1">
-              <div class="flex justify-between items-start">
-                <div>
-                  <div class="flex items-center gap-3">
-                    <h3 class="text-lg font-bold text-slate-800">{{ record.title }}</h3>
-                    <span :class="[
-                      'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
-                      record.severity === 'critique' ? 'bg-red-100 text-red-600' : 
-                      record.severity === 'modérée' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'
-                    ]">
-                      {{ record.severity }}
-                    </span>
-                  </div>
-                  <p class="text-sm text-slate-500 mt-1 font-medium">
-                    {{ new Date(record.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) }}
-                  </p>
-                </div>
-                <button @click="healthStore.deleteRecord(record._id)" class="text-slate-300 hover:text-red-500 transition-colors">
-                  <Trash2 :size="18" />
-                </button>
+          <!-- Barre de recherche -->
+          <div class="flex flex-col sm:flex-row gap-2 w-full">
+            <div class="relative flex-1">
+              <input 
+                v-model="campaignSearchName"
+                type="text"
+                placeholder="Nom de la campagne..."
+                class="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+              />
+              <Search :size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <div v-if="searchLoading" class="absolute right-3 top-1/2 -translate-y-1/2">
+                <div class="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
+            </div>
+            <button 
+              @click="showModal = true"
+              :disabled="!isCampaignFound"
+              class="btn bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white font-semibold self-start sm:self-auto"
+            >
+              <Plus :size="18" />
+              Événement
+            </button>
+          </div>
 
-              <p class="text-slate-600 mt-4 leading-relaxed">{{ record.details }}</p>
+          <!-- Statut -->
+          <div v-if="campaignSearchName && !searchLoading" class="flex items-start gap-2 text-sm">
+            <CheckCircle2 v-if="isCampaignFound" :size="16" class="text-green-600 flex-shrink-0 mt-0.5" />
+            <XCircle v-else :size="16" class="text-red-400 flex-shrink-0 mt-0.5" />
+            <span :class="isCampaignFound ? 'text-green-700' : 'text-red-600'">
+              {{ isCampaignFound ? `Campagne trouvée: ${campaignSearchName}` : 'Campagne introuvable' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-              <!-- Informations complémentaires -->
-              <div class="mt-4 flex flex-wrap gap-4">
-                <!-- Médicament -->
-                <div v-if="record.medication?.name" class="bg-slate-100 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-semibold text-slate-700">
-                  <span class="text-slate-400">Médicament:</span> {{ record.medication.name }}
-                </div>
-                <div v-if="record.medication?.dosage" class="bg-slate-100 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-semibold text-slate-700">
-                  <span class="text-slate-400">Dosage:</span> {{ record.medication.dosage }}
-                </div>
-
-                <!-- Délai d'attente (Alerte Visuelle) -->
-                <div v-if="record.withdrawalPeriod > 0" 
-                  :class="[
-                    'px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold border',
-                    isWithdrawalActive(record) ? 'bg-red-50 text-red-700 border-red-100' : 'bg-green-50 text-green-700 border-green-100'
-                  ]">
-                  <AlertTriangle v-if="isWithdrawalActive(record)" :size="14" />
-                  <CheckCircle2 v-else :size="14" />
-                  Délai d'attente: {{ record.withdrawalPeriod }} jours 
-                  <span v-if="isWithdrawalActive(record)" class="ml-1 opacity-75">
-                    (Reste {{ getWithdrawalRemaining(record) }}j)
-                  </span>
-                </div>
-
-                <!-- Prochain Rappel -->
-                <div v-if="record.nextFollowUpDate" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold border border-blue-100">
-                  <Calendar :size="14" />
-                  Rappel prévu le: {{ new Date(record.nextFollowUpDate).toLocaleDateString('fr-FR') }}
-                </div>
+    <!-- Contenu principal -->
+    <main v-if="isCampaignFound" class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+      <!-- Stats Rapides -->
+      <section>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+          <div class="card">
+            <div class="flex flex-col items-start">
+              <div class="p-2.5 md:p-3 bg-red-50 text-red-500 rounded-lg mb-3">
+                <AlertTriangle :size="20" />
               </div>
+              <p class="text-xs md:text-small text-slate-500 font-semibold mb-1">Alertes Actives</p>
+              <p class="heading-2 text-slate-800">{{ activeAlertsCount }}</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="flex flex-col items-start">
+              <div class="p-2.5 md:p-3 bg-blue-50 text-blue-500 rounded-lg mb-3">
+                <Syringe :size="20" />
+              </div>
+              <p class="text-xs md:text-small text-slate-500 font-semibold mb-1">Vaccins</p>
+              <p class="heading-2 text-slate-800">{{ vaccinationCount }}</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="flex flex-col items-start">
+              <div class="p-2.5 md:p-3 bg-orange-50 text-orange-500 rounded-lg mb-3">
+                <Calendar :size="20" />
+              </div>
+              <p class="text-xs md:text-small text-slate-500 font-semibold mb-1">Dernier Traitement</p>
+              <p class="heading-2 text-slate-800 text-base md:text-lg">{{ lastTreatmentLabel }}</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="flex flex-col items-start">
+              <div :class="['p-2.5 md:p-3 rounded-lg mb-3', activeWithdrawalCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-green-50 text-green-600']">
+                <AlertTriangle :size="20" />
+              </div>
+              <p class="text-xs md:text-small text-slate-500 font-semibold mb-1">Délai Attente</p>
+              <p class="heading-2 text-slate-800">{{ activeWithdrawalCount }}</p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- Modal Formulaire -->
-    <div v-if="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h2 class="text-xl font-bold text-slate-800">Nouvel événement santé</h2>
-          <button @click="showModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-            <X :size="24" />
+      <!-- Liste des enregistrements -->
+      <section class="card">
+        <!-- Filtres -->
+        <div class="p-4 md:p-6 border-b border-slate-200 flex flex-wrap gap-2">
+          <button 
+            v-for="filter in [
+              { id: 'all', label: 'Tout' },
+              { id: 'maladie', label: 'Maladies' },
+              { id: 'vaccination', label: 'Vaccins'  },
+              { id: 'observation', label: 'Observations' }
+            ]" 
+            :key="filter.id"
+            @click="filterType = filter.id"
+            :class="[
+              'px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
+              filterType === filter.id ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            ]"
+          >
+            {{ filter.label }}
           </button>
         </div>
 
-        <form @submit.prevent="submitForm" class="p-8 space-y-5">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700">Type</label>
-              <select v-model="newRecord.type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all">
+        <div v-if="healthStore.loading" class="p-8 md:p-12 text-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-b-orange-500 mx-auto mb-4"></div>
+          <p class="text-slate-400 text-sm">Chargement...</p>
+        </div>
+        
+        <div v-else-if="filteredRecords.length === 0" class="p-8 md:p-12 text-center">
+          <p class="text-slate-500 text-sm">Aucun événement trouvé</p>
+        </div>
+
+        <div v-else class="divide-y divide-slate-100">
+          <div v-for="record in filteredRecords" :key="record._id" class="p-4 md:p-6 hover:bg-slate-50/50 transition-colors">
+            <div class="flex gap-3 md:gap-6">
+              <!-- Icône -->
+              <div :class="['p-2 md:p-3 rounded-lg h-fit flex-shrink-0', getTypeColor(record.type)]">
+                <component :is="getIcon(record.type)" :size="20" />
+              </div>
+
+              <!-- Contenu -->
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                  <div class="min-w-0">
+                    <h3 class="font-bold text-slate-800 text-sm md:text-base truncate">
+                      {{ record.title }}
+                    </h3>
+                    <p class="text-xs md:text-small text-slate-500 mt-1">
+                      {{ new Date(record.date).toLocaleDateString('fr-FR', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                      }) }}
+                    </p>
+                  </div>
+                  <button 
+                    @click="healthStore.deleteRecord(record._id)"
+                    class="text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
+                  >
+                    <Trash2 :size="18" />
+                  </button>
+                </div>
+
+                <!-- Sévérité -->
+                <div class="mb-3">
+                  <span :class="[
+                    'px-2 py-1 rounded text-xs font-bold',
+                    record.severity === 'critique' ? 'bg-red-100 text-red-700' : 
+                    record.severity === 'modérée' ? 'bg-orange-100 text-orange-700' : 
+                    'bg-green-100 text-green-700'
+                  ]">
+                    {{ record.severity }}
+                  </span>
+                </div>
+
+                <!-- Description -->
+                <p class="text-slate-600 text-sm mb-3 leading-relaxed">{{ record.details }}</p>
+
+                <!-- Infos complémentaires -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <div v-if="record.medication?.name" class="bg-slate-100 px-2 py-1 rounded text-xs font-semibold text-slate-700">
+                    💊 {{ record.medication.name }}
+                  </div>
+                  <div v-if="record.medication?.dosage" class="bg-slate-100 px-2 py-1 rounded text-xs font-semibold text-slate-700">
+                    📊 {{ record.medication.dosage }}
+                  </div>
+                </div>
+
+                <!-- Délai d'attente et rappels -->
+                <div class="space-y-2">
+                  <div v-if="record.withdrawalPeriod > 0" 
+                    :class="[
+                      'px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-bold',
+                      isWithdrawalActive(record) ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'
+                    ]">
+                    <AlertTriangle v-if="isWithdrawalActive(record)" :size="14" />
+                    <CheckCircle2 v-else :size="14" />
+                    <span>
+                      Délai d'attente: {{ record.withdrawalPeriod }}j
+                      <span v-if="isWithdrawalActive(record)" class="ml-1">(Reste {{ getWithdrawalRemaining(record) }}j)</span>
+                    </span>
+                  </div>
+
+                  <div v-if="record.nextFollowUpDate" class="px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                    <Calendar :size="14" />
+                    Rappel: {{ new Date(record.nextFollowUpDate).toLocaleDateString('fr-FR') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Message quand aucune campagne n'est sélectionnée -->
+    <main v-else class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+      <div class="card text-center py-12">
+        <Stethoscope :size="48" class="mx-auto text-slate-300 mb-4" />
+        <p class="text-slate-500 text-sm md:text-base">Recherchez une campagne pour voir l'historique de santé</p>
+      </div>
+    </main>
+
+    <!-- Modal Formulaire -->
+    <div v-if="showModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md md:max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] overflow-y-auto">
+        <div class="sticky top-0 p-4 md:p-6 border-b border-slate-200 bg-white flex items-center justify-between">
+          <h2 class="heading-2 text-slate-800">Nouvel événement</h2>
+          <button 
+            @click="showModal = false"
+            class="text-slate-400 hover:text-slate-600 transition-colors p-1"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form @submit.prevent="submitForm" class="p-4 md:p-6 space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Type</label>
+              <select v-model="newRecord.type" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10">
                 <option value="observation">Observation</option>
                 <option value="maladie">Maladie</option>
                 <option value="vaccination">Vaccination</option>
               </select>
             </div>
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700">Date</label>
-              <input v-model="newRecord.date" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
+            <div>
+              <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Date</label>
+              <input v-model="newRecord.date" type="date" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10" />
             </div>
           </div>
 
-          <div class="space-y-2">
-            <label class="text-sm font-bold text-slate-700">Titre de l'événement</label>
-            <input v-model="newRecord.title" type="text" placeholder="ex: Rappel Gumboro, Observation Diarrhée..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
+          <div>
+            <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Titre</label>
+            <input v-model="newRecord.title" type="text" placeholder="ex: Rappel Gumboro..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10" />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700">Médicament / Produit</label>
-              <input v-model="newRecord.medication.name" type="text" placeholder="Nom du produit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Médicament</label>
+              <input v-model="newRecord.medication.name" type="text" placeholder="Nom du produit" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10" />
             </div>
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700">Dosage</label>
-              <input v-model="newRecord.medication.dosage" type="text" placeholder="ex: 10ml / 100L" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
+            <div>
+              <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Dosage</label>
+              <input v-model="newRecord.medication.dosage" type="text" placeholder="ex: 10ml / 100L" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10" />
             </div>
           </div>
 
-          <div class="space-y-2">
-            <label class="text-sm font-bold text-slate-700">Observations détaillées</label>
-            <textarea v-model="newRecord.details" rows="3" placeholder="Décrivez les symptômes ou le protocole..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all"></textarea>
+          <div>
+            <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Détails</label>
+            <textarea v-model="newRecord.details" rows="2" placeholder="Observations..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10" />
           </div>
 
-          <div class="grid grid-cols-3 gap-4">
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700">Sévérité</label>
-              <select v-model="newRecord.severity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all">
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Sévérité</label>
+              <select v-model="newRecord.severity" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10">
                 <option value="faible">Faible</option>
                 <option value="modérée">Modérée</option>
                 <option value="critique">Critique</option>
               </select>
             </div>
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700">Délai attente (j)</label>
-              <input v-model="newRecord.withdrawalPeriod" type="number" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
+            <div>
+              <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Délai (j)</label>
+              <input v-model.number="newRecord.withdrawalPeriod" type="number" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10" />
             </div>
-            <div class="space-y-2">
-              <label class="text-sm font-bold text-slate-700">Prochain Rappel</label>
-              <input v-model="newRecord.nextFollowUpDate" type="date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all" />
+            <div>
+              <label class="text-xs md:text-small text-slate-600 font-semibold block mb-2">Rappel</label>
+              <input v-model="newRecord.nextFollowUpDate" type="date" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10" />
             </div>
           </div>
 
-          <div class="pt-4">
+          <div class="flex gap-2 pt-2">
             <button 
               type="submit"
-              class="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-orange-500/20 transition-all active:scale-95"
+              class="flex-1 btn bg-orange-500 hover:bg-orange-600 text-white font-semibold"
             >
-              Enregistrer l'événement
+              Enregistrer
+            </button>
+            <button 
+              type="button"
+              @click="showModal = false"
+              class="flex-1 btn bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold"
+            >
+              Annuler
             </button>
           </div>
         </form>
@@ -440,19 +473,3 @@ const getTypeColor = (type) => {
   </div>
 </template>
 
-<style scoped>
-.animate-in {
-  animation: fadeInScale 0.3s ease-out;
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-</style>

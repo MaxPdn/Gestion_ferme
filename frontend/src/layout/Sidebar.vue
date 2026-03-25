@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import SidebarItem from "./SidebarItem.vue";
 import {
@@ -17,7 +17,17 @@ import {
   ChevronRight,
   Settings,
   LogOut,
+  X
 } from "lucide-vue-next";
+
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const emit = defineEmits(['close']);
 
 const router = useRouter();
 const isCollapsed = ref(false);
@@ -34,6 +44,7 @@ const menuItems = [
   {
     icon: BadgeDollarSign,
     label: "Financier",
+    path: "/finance",
     roles: ["Admin", "Gestionnaire"],
   },
   { icon: Package, label: "Stocks" },
@@ -51,6 +62,7 @@ const selectItem = (item) => {
   activeItem.value = item.label;
   if (item.path) {
     router.push(item.path);
+    emit('close'); // Fermer le menu mobile après navigation
   }
 };
 
@@ -67,34 +79,48 @@ const logout = () => {
 </script>
 
 <template>
+  <!-- Overlay pour mobile -->
+  <div 
+    v-if="isOpen" 
+    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
+    @click="emit('close')"
+  ></div>
+
   <aside
     :class="[
-      'h-screen bg-[#1e293b] text-white flex flex-col transition-all duration-300 ease-in-out border-r border-slate-700/50',
-      isCollapsed ? 'w-20' : 'w-72',
+      'fixed inset-y-0 left-0 z-50 lg:static flex flex-col bg-[#1e293b] text-white transition-all duration-300 ease-in-out border-r border-slate-700/50',
+      isCollapsed ? 'lg:w-20' : 'lg:w-72',
+      isOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
     ]"
   >
     <!-- LOGO SECTION -->
-    <div class="flex items-center gap-4 px-6 py-8">
-      <div
-        class="flex-shrink-0 bg-gradient-to-br from-orange-400 to-orange-600 p-2.5 rounded-2xl shadow-lg shadow-orange-500/20"
-      >
-        <Sprout :size="24" class="text-white" />
-      </div>
-      <div
-        v-if="!isCollapsed"
-        class="overflow-hidden transition-all duration-300"
-      >
-        <h1
-          class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400"
+    <div class="flex items-center justify-between px-6 py-8">
+      <div class="flex items-center gap-4">
+        <div
+          class="flex-shrink-0 bg-gradient-to-br from-orange-400 to-orange-600 p-2.5 rounded-2xl shadow-lg shadow-orange-500/20"
         >
-          TerraCore
-        </h1>
-        <p
-          class="text-[10px] uppercase tracking-[0.2em] text-orange-500 font-bold"
+          <Sprout :size="24" class="text-white" />
+        </div>
+        <div
+          v-if="!isCollapsed || isOpen"
+          class="overflow-hidden transition-all duration-300"
         >
-          Gestion Ferme
-        </p>
+          <h1
+            class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400"
+          >
+            TerraCore
+          </h1>
+          <p
+            class="text-[10px] uppercase tracking-[0.2em] text-orange-500 font-bold"
+          >
+            Gestion Ferme
+          </p>
+        </div>
       </div>
+      <!-- Bouton fermer pour mobile -->
+      <button @click="emit('close')" class="lg:hidden p-2 text-slate-400 hover:text-white">
+        <X :size="24" />
+      </button>
     </div>
 
     <!-- NAVIGATION -->
@@ -104,7 +130,7 @@ const logout = () => {
           v-for="(item, index) in menuItems"
           :key="index"
           :icon="item.icon"
-          :label="isCollapsed ? '' : item.label"
+          :label="(isCollapsed && !isOpen) ? '' : item.label"
           :active="activeItem === item.label"
           @click="selectItem(item)"
           class="relative"
@@ -116,7 +142,7 @@ const logout = () => {
     <div class="mt-auto border-t border-slate-700/50 p-4">
       <div class="space-y-2">
         <div
-          v-if="!isCollapsed"
+          v-if="!isCollapsed || isOpen"
           class="px-4 py-2 mb-2 bg-slate-800/30 rounded-xl"
         >
           <p class="text-xs text-slate-400">Connecté en tant que</p>
@@ -132,7 +158,7 @@ const logout = () => {
 
         <SidebarItem
           :icon="Settings"
-          :label="isCollapsed ? '' : 'Paramètres'"
+          :label="(isCollapsed && !isOpen) ? '' : 'Paramètres'"
           class="opacity-60 hover:opacity-100 transition-opacity"
         />
 
@@ -144,14 +170,14 @@ const logout = () => {
             :size="20"
             class="group-hover:translate-x-1 transition-transform"
           />
-          <span v-if="!isCollapsed" class="text-sm font-medium"
+          <span v-if="!isCollapsed || isOpen" class="text-sm font-medium"
             >Déconnexion</span
           >
         </button>
 
         <button
           @click="toggleSidebar"
-          class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-800/50 hover:bg-slate-700 transition-colors text-slate-400 hover:text-white mt-4"
+          class="hidden lg:flex w-full items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-800/50 hover:bg-slate-700 transition-colors text-slate-400 hover:text-white mt-4"
         >
           <component
             :is="isCollapsed ? ChevronRight : ChevronLeft"

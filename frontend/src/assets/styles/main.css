@@ -1,1 +1,647 @@
 @import "tailwindcss";
+
+/* ================================================
+   🎨 STYLES GLOBAUX RESPONSIFS
+   Mobile-first approach avec Tailwind breakpoints
+   ================================================ */
+
+:root {
+  --color-primary: #1e293b;
+  --color-accent: #f97316;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-bg: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  
+  /* Espacement fluvide */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Typographie responsivité */
+  --font-size-2xs: 0.625rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+}
+
+/* ================================================
+   📱 BASE RESPONSIVE
+   ================================================ */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ================================================
+   🎯 CONTAINERS RESPONSIFS
+   ================================================ */
+
+/* Container principal pour tout le contenu */
+.container-responsive {
+  width: 100%;
+  padding: 1rem;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    padding: 2rem;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    padding: 2.5rem;
+    max-width: 100%;
+  }
+}
+
+/* Container avec max-width géré */
+.container-max {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .container-max {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-max {
+    padding: 2rem;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-max {
+    padding: 3rem;
+    max-width: 120rem;
+  }
+}
+
+/* ================================================
+   📋 GRILLES FLUIDES
+   ================================================ */
+
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid-responsive-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+.grid-responsive-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-responsive-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+.grid-responsive-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* ================================================
+   🔤 TYPOGRAPHIE RESPONSIVE
+   ================================================ */
+
+h1, .heading-1 {
+  font-size: 1.875rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  h1, .heading-1 {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  h1, .heading-1 {
+    font-size: 2.5rem;
+  }
+}
+
+h2, .heading-2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  h2, .heading-2 {
+    font-size: 1.875rem;
+  }
+}
+
+h3, .heading-3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  h3, .heading-3 {
+    font-size: 1.5rem;
+  }
+}
+
+.text-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .text-body {
+    font-size: 1rem;
+  }
+}
+
+.text-small {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .text-small {
+    font-size: 0.875rem;
+  }
+}
+
+/* ================================================
+   🔘 BOUTONS RESPONSIFS
+   ================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  -webkit-user-select: none;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 0.875rem;
+  }
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-lg {
+  padding: 1rem 1.75rem;
+  font-size: 1rem;
+  border-radius: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .btn-lg {
+    padding: 1.125rem 2rem;
+    font-size: 1.125rem;
+  }
+}
+
+.btn-sm {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .btn-sm {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* ================================================
+   📦 CARTES RESPONSIVE
+   ================================================ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-accent);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: 1.5rem;
+    border-radius: 1.75rem;
+  }
+}
+
+.card-compact {
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .card-compact {
+    padding: 1.25rem;
+  }
+}
+
+/* ================================================
+   📱 TABLES RESPONSIVE
+   ================================================ */
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 0.375rem;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 0.75rem;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 0.75rem;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  table {
+    font-size: 1rem;
+  }
+}
+
+th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 700;
+  background: #f8fafc;
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  th {
+    padding: 1rem;
+  }
+}
+
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 768px) {
+  td {
+    padding: 1rem;
+  }
+}
+
+tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* ================================================
+   🎨 UTILITAIRES
+   ================================================ */
+
+/* Prévenir les débordements */
+.no-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.no-overflow-y {
+  overflow-y: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Flexbox responsive */
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .flex-responsive {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+}
+
+.flex-responsive-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .flex-responsive-wrap {
+    gap: 1rem;
+  }
+}
+
+/* Espacement responsive */
+.px-responsive {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .px-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .px-responsive {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.py-responsive {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .py-responsive {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .py-responsive {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+.p-responsive {
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .p-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .p-responsive {
+    padding: 2rem;
+  }
+}
+
+/* Gap responsive */
+.gap-responsive {
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .gap-responsive {
+    gap: 1.5rem;
+  }
+}
+
+/* ================================================
+   📊 FORMES FLUIDES
+   ================================================ */
+
+input,
+textarea,
+select {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+@media (min-width: 768px) {
+  input,
+  textarea,
+  select {
+    padding: 0.875rem;
+    border-radius: 0.875rem;
+  }
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+/* ================================================
+   🎬 ANIMATIONS
+   ================================================ */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ================================================
+   ✨ ÉTATS RESPONSIFS
+   ================================================ */
+
+.hidden-on-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hidden-on-mobile {
+    display: block;
+  }
+}
+
+.visible-on-mobile {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .visible-on-mobile {
+    display: none;
+  }
+}

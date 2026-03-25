@@ -110,170 +110,263 @@ onMounted(fetchUsers);
 </script>
 
 <template>
-  <div class="p-8 bg-slate-50 min-h-screen">
-    <div class="flex justify-between items-center mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-slate-800">Gestion des Utilisateurs</h1>
-        <p class="text-slate-500 mt-1 font-medium">Administration des accès de la plateforme TerraCore</p>
-      </div>
-      <button 
-        @click="openModal()"
-        class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all active:scale-95 font-bold uppercase tracking-wide text-sm"
-      >
-        <Plus :size="20" />
-        Ajouter un utilisateur
-      </button>
-    </div>
-
-    <!-- Barre de recherche et filtres -->
-    <div class="flex flex-col md:flex-row gap-4 mb-8">
-      <div class="relative flex-1 group">
-        <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" :size="20" />
-        <input 
-          v-model="searchQuery"
-          type="text" 
-          placeholder="Rechercher par nom..." 
-          class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm"
-        />
-      </div>
-      
-      <div class="relative w-full md:w-64 group">
-        <Filter class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" :size="18" />
-        <select 
-          v-model="roleFilter"
-          class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none appearance-none cursor-pointer shadow-sm font-medium text-slate-700"
-        >
-          <option value="">Tous les rôles</option>
-          <option value="Admin">Administrateurs</option>
-          <option value="Gestionnaire">Gestionnaires</option>
-          <option value="Agent terrain">Agents terrain</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-slate-50/80 border-b border-slate-200">
-          <tr>
-            <th class="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Nom</th>
-            <th class="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Email</th>
-            <th class="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Rôle</th>
-            <th class="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-          <tr v-for="user in filteredUsers" :key="user._id" class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-8 py-5">
-              <span class="font-bold text-slate-700">{{ user.username }}</span>
-            </td>
-            <td class="px-8 py-5 text-slate-500 font-medium">{{ user.email }}</td>
-            <td class="px-8 py-5">
-              <span 
-                :class="[
-                  'px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border',
-                  user.role === 'Admin' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 
-                  user.role === 'Gestionnaire' ? 'bg-slate-800/10 text-slate-800 border-slate-800/20' : 'bg-slate-100 text-slate-500 border-slate-200'
-                ]"
-              >
-                {{ user.role }}
-              </span>
-            </td>
-            <td class="px-8 py-5 text-right">
-              <div class="flex justify-end gap-3">
-                <button 
-                  @click="openModal(user)"
-                  class="p-2.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all"
-                >
-                  <Pencil :size="18" />
-                </button>
-                <button 
-                  @click="confirmDelete(user)"
-                  class="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                >
-                  <Trash2 :size="18" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      
-      <div v-if="loading" class="p-16 text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500/20 border-t-orange-500 mb-4"></div>
-        <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Chargement des données...</p>
-      </div>
-      <div v-if="!loading && filteredUsers.length === 0" class="p-16 text-center">
-        <div class="bg-slate-50 inline-block p-6 rounded-full mb-4">
-            <Search :size="32" class="text-slate-300" />
+  <div class="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="heading-1 text-slate-800">Gestion Utilisateurs</h1>
+            <p class="text-small text-slate-500 mt-2">Administrez les accès de la plateforme</p>
+          </div>
+          <button 
+            @click="openModal()"
+            class="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold self-start"
+          >
+            <Plus :size="18" />
+            Ajouter
+          </button>
         </div>
-        <p class="text-slate-500 font-bold">Aucun utilisateur trouvé</p>
-        <p class="text-slate-400 text-sm">Essayez d'ajuster vos filtres de recherche</p>
       </div>
     </div>
+
+    <!-- Contenu principal -->
+    <main class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+      <!-- Filtres -->
+      <div class="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6">
+        <div class="relative flex-1">
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" :size="18" />
+          <input 
+            v-model="searchQuery"
+            type="text" 
+            placeholder="Rechercher..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
+          />
+        </div>
+        
+        <div class="relative w-full sm:w-48">
+          <select 
+            v-model="roleFilter"
+            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none appearance-none cursor-pointer text-sm font-medium text-slate-700"
+          >
+            <option value="">Tous les rôles</option>
+            <option value="Admin">Administrateurs</option>
+            <option value="Gestionnaire">Gestionnaires</option>
+            <option value="Agent terrain">Agents terrain</option>
+          </select>
+          <Filter class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" :size="16" />
+        </div>
+      </div>
+
+      <!-- État de chargement -->
+      <div v-if="loading" class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-b-orange-500"></div>
+      </div>
+
+      <!-- Tableau Desktop -->
+      <div v-else-if="!loading" class="hidden md:block card overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Rôle</th>
+              <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="user in filteredUsers" :key="user._id" class="hover:bg-slate-50 transition-colors">
+              <td class="px-6 py-4">
+                <span class="font-bold text-slate-800">{{ user.username }}</span>
+              </td>
+              <td class="px-6 py-4 text-slate-500 font-medium text-sm">{{ user.email }}</td>
+              <td class="px-6 py-4">
+                <span 
+                  :class="[
+                    'px-3 py-1 rounded-lg text-xs font-bold',
+                    user.role === 'Admin' ? 'bg-orange-100 text-orange-700' : 
+                    user.role === 'Gestionnaire' ? 'bg-slate-200 text-slate-700' : 
+                    'bg-slate-100 text-slate-600'
+                  ]"
+                >
+                  {{ user.role }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex justify-end gap-2">
+                  <button 
+                    @click="openModal(user)"
+                    class="p-2 hover:bg-orange-100 text-orange-600 rounded-lg transition-colors"
+                    title="Éditer"
+                  >
+                    <Pencil :size="18" />
+                  </button>
+                  <button 
+                    @click="confirmDelete(user)"
+                    class="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                    title="Supprimer"
+                  >
+                    <Trash2 :size="18" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Cartes Mobile -->
+      <div v-else class="md:hidden space-y-3">
+        <div v-for="user in filteredUsers" :key="user._id" class="card">
+          <div class="flex items-start justify-between mb-3">
+            <div class="min-w-0 flex-1">
+              <h3 class="font-bold text-slate-800 truncate">{{ user.username }}</h3>
+              <p class="text-small text-slate-500 truncate">{{ user.email }}</p>
+            </div>
+            <span 
+              :class="[
+                'px-2 py-1 rounded text-xs font-bold flex-shrink-0',
+                user.role === 'Admin' ? 'bg-orange-100 text-orange-700' : 
+                user.role === 'Gestionnaire' ? 'bg-slate-200 text-slate-700' : 
+                'bg-slate-100 text-slate-600'
+              ]"
+            >
+              {{ user.role }}
+            </span>
+          </div>
+          <div class="flex gap-2 pt-3 border-t border-slate-100">
+            <button 
+              @click="openModal(user)"
+              class="flex-1 py-2 px-3 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-700 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <Pencil :size="16" />
+              Éditer
+            </button>
+            <button 
+              @click="confirmDelete(user)"
+              class="flex-1 py-2 px-3 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <Trash2 :size="16" />
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- État vide -->
+      <div v-if="!loading && filteredUsers.length === 0" class="card text-center py-12">
+        <Search :size="48" class="mx-auto text-slate-300 mb-4" />
+        <p class="text-slate-500 mb-2">Aucun utilisateur trouvé</p>
+        <p class="text-small text-slate-400">Ajustez vos filtres ou créez un nouvel utilisateur</p>
+      </div>
+    </main>
 
     <!-- Modal Create/Edit -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-white/20">
-        <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 class="text-xl font-bold text-slate-800">
+    <div v-if="showModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[95vh] overflow-y-auto">
+        <div class="sticky top-0 p-4 md:p-6 border-b border-slate-200 bg-white flex items-center justify-between">
+          <h2 class="heading-2 text-slate-800">
             {{ editingUser ? 'Modifier' : 'Créer' }} un compte
-          </h3>
-          <button @click="showModal = false" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-all">
-            <X :size="20" />
+          </h2>
+          <button 
+            @click="showModal = false" 
+            class="text-slate-400 hover:text-slate-600 transition-colors p-1"
+          >
+            <X :size="24" />
           </button>
         </div>
         
-        <div class="p-8 space-y-5">
+        <form @submit.prevent="saveUser" class="p-4 md:p-6 space-y-4">
           <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">Nom d'utilisateur</label>
-            <input v-model="form.username" type="text" placeholder="Ex: Jean Dupont" class="w-full border border-slate-200 p-3.5 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all bg-slate-50/50" />
+            <label class="text-small text-slate-600 font-semibold block mb-2">Nom d'utilisateur</label>
+            <input 
+              v-model="form.username" 
+              type="text" 
+              placeholder="Jean Dupont"
+              required
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
+            />
           </div>
-          <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">Adresse Email</label>
-            <input v-model="form.email" type="email" placeholder="email@exemple.com" class="w-full border border-slate-200 p-3.5 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all bg-slate-50/50" />
-          </div>
-          <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">Mot de passe {{ editingUser ? '(Optionnel)' : '' }}</label>
-            <input v-model="form.password" type="password" placeholder="••••••••" class="w-full border border-slate-200 p-3.5 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all bg-slate-50/50" />
-          </div>
-          <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">Rôle utilisateur</label>
-            <div class="relative">
-                <select v-model="form.role" class="w-full border border-slate-200 p-3.5 rounded-2xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none bg-slate-50/50 appearance-none font-medium text-slate-700">
-                <option value="Admin">Administrateur</option>
-                <option value="Gestionnaire">Gestionnaire</option>
-                <option value="Agent terrain">Agent terrain</option>
-                </select>
-                <Filter class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" :size="16" />
-            </div>
-          </div>
-        </div>
 
-        <div class="px-8 py-6 bg-slate-50 flex justify-end gap-4">
-          <button @click="showModal = false" class="px-5 py-2.5 text-slate-500 font-bold text-sm hover:text-slate-800 transition-colors uppercase tracking-widest">Annuler</button>
-          <button @click="saveUser" class="bg-[#1e293b] hover:bg-slate-800 text-white px-8 py-3 rounded-2xl font-black text-xs shadow-xl shadow-slate-900/20 transition-all active:scale-95 uppercase tracking-[0.1em]">
-            {{ editingUser ? 'Mettre à jour' : 'Confirmer la création' }}
-          </button>
-        </div>
+          <div>
+            <label class="text-small text-slate-600 font-semibold block mb-2">Email</label>
+            <input 
+              v-model="form.email" 
+              type="email" 
+              placeholder="email@exemple.com"
+              required
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="text-small text-slate-600 font-semibold block mb-2">
+              Mot de passe {{ editingUser ? '(Optionnel)' : '' }}
+            </label>
+            <input 
+              v-model="form.password" 
+              type="password" 
+              placeholder="••••••••"
+              :required="!editingUser"
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="text-small text-slate-600 font-semibold block mb-2">Rôle</label>
+            <select 
+              v-model="form.role"
+              required
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none text-sm font-medium text-slate-700"
+            >
+              <option value="Admin">Administrateur</option>
+              <option value="Gestionnaire">Gestionnaire</option>
+              <option value="Agent terrain">Agent terrain</option>
+            </select>
+          </div>
+
+          <div class="flex gap-2 pt-4 border-t border-slate-100">
+            <button 
+              type="submit"
+              class="flex-1 btn bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              {{ editingUser ? 'Modifier' : 'Créer' }}
+            </button>
+            <button 
+              type="button"
+              @click="showModal = false"
+              class="flex-1 btn bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold"
+            >
+              Annuler
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <!-- Modal Delete Confirmation -->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md">
-      <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden">
-        <div class="p-10 text-center">
-          <div class="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3">
-            <AlertTriangle :size="40" />
-          </div>
-          <h3 class="text-2xl font-black text-slate-800 mb-3 uppercase tracking-tighter">Avertissement</h3>
-          <p class="text-slate-500 leading-relaxed">Voulez-vous vraiment supprimer le compte de <span class="font-bold text-slate-800">{{ userToDelete?.username }}</span> ?</p>
+    <!-- Modal Confirmation Suppression -->
+    <div v-if="showDeleteConfirm" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+          <h2 class="heading-2 text-slate-800">Confirmer la suppression</h2>
+          <p class="text-small text-slate-500 mt-2">
+            Êtes-vous certain de vouloir supprimer l'utilisateur 
+            <span class="font-bold">{{ userToDelete?.username }}</span> ?
+          </p>
         </div>
         
-        <div class="px-8 py-6 bg-slate-50 flex gap-4">
-          <button @click="showDeleteConfirm = false" class="flex-1 px-4 py-4 text-slate-500 font-bold text-xs uppercase tracking-widest hover:bg-slate-100 rounded-2xl transition-all">Retour</button>
-          <button @click="deleteUser" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-red-500/30 transition-all active:scale-95">
+        <div class="p-6 flex gap-3">
+          <button 
+            @click="deleteUser"
+            class="flex-1 btn bg-red-600 hover:bg-red-700 text-white font-semibold"
+          >
             Supprimer
+          </button>
+          <button 
+            @click="showDeleteConfirm = false"
+            class="flex-1 btn bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold"
+          >
+            Annuler
           </button>
         </div>
       </div>

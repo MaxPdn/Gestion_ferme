@@ -1,4 +1,5 @@
 import express from 'express';
+import { protect } from '../middlewares/middleware.js';
 import { 
   createHealthRecord, 
   getCampaignHealthHistory, 
@@ -6,6 +7,9 @@ import {
 } from '../controllers/healthController.js';
 
 const router = express.Router();
+
+// 🔒 Appliquer la protection à toutes les routes
+router.use(protect);
 
 // Routes pour la santé d'une campagne spécifique
 router.route('/:campaignId')
