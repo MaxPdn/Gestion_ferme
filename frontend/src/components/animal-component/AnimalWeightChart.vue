@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { Line } from "vue-chartjs";
 import {
   Chart,
@@ -15,8 +16,8 @@ const props = defineProps({
   weights: Array
 });
 
-// transformer données
-const data = {
+// ✅ data devient réactif
+const data = computed(() => ({
   labels: props.weights.map(w =>
     new Date(w.date).toLocaleDateString()
   ),
@@ -31,7 +32,7 @@ const data = {
       pointBackgroundColor: "#f97316"
     }
   ]
-};
+}));
 
 const options = {
   responsive: true,
@@ -51,24 +52,18 @@ const options = {
 
 <template>
   <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
-    
+
     <h3 class="font-semibold text-lg mb-4">
       Évolution du poids
     </h3>
 
     <!-- EMPTY -->
-    <div
-      v-if="weights.length === 0"
-      class="text-slate-400 text-sm text-center py-10"
-    >
+    <div v-if="weights.length === 0" class="text-slate-400 text-sm text-center py-10">
       Aucune donnée disponible
     </div>
 
     <!-- CHART -->
-    <div
-      v-else
-      class="relative h-64 transition-all duration-300 hover:scale-[1.01]"
-    >
+    <div v-else class="relative h-64 transition-all duration-300 hover:scale-[1.01]">
       <Line :data="data" :options="options" />
     </div>
 

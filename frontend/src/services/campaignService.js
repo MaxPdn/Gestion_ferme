@@ -1,12 +1,18 @@
-export async function getCampaigns() {
-  return [
-    {
-      _id: "69c3af2c97ac3cb3eb8ebdb7",
-      name: "Campagne bétail"
-    },
-    {
-      _id: "69c1522d6d678b5746b1b6d3",
-      name: "Campagne Porcin"
-    }
-  ];
-}
+import axios from "axios";
+
+const API = "http://localhost:7000/api/campaigns";
+
+export const getCampaigns = () => axios.get(API);
+export const getCampaign = (id) => axios.get(`${API}/${id}`);
+export const createCampaign = (data) => axios.post(API, data);
+
+export const addLoss = (id, quantity) =>
+  axios.post(`${API}/${id}/losses`, { quantity });
+
+export const addSale = (id, quantity) =>
+  axios.post(`${API}/${id}/sales`, { quantity });
+
+export const updateStatus = (id, status) =>
+  axios.patch(`${API}/${id}/status`, { status });
+
+export const deleteCampaign = (id) => axios.delete(`${API}/${id}`);

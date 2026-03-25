@@ -1,4 +1,5 @@
 import app from "./app.js";
+import mongoose from "mongoose";
 import cors from "cors";
 import { connectDB } from "./db/connect.js";
 import 'dotenv/config';
@@ -15,5 +16,5 @@ try {
 }
 
 app.listen(port, () => {
-  console.log(`✅L'application express a démarré sur le port ${port}`);
+  console.log(`✅ L'application express a démarré sur le port ${port}`);
 });

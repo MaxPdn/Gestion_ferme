@@ -42,7 +42,7 @@ const getAgeLabel = (date) => {
     </h1>
 
 <p class="text-gray-500 text-sm">
-  {{ animal.species.toUpperCase() }} • {{ getAgeLabel(animal.birthDate) }}
+  {{ animal.campaign?.department?.name.toUpperCase() || "Pas de Departement" }} • {{ getAgeLabel(animal.birthDate) }}
 </p>
   </div>
 </div>

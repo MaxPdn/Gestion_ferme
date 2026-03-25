@@ -56,10 +56,10 @@ const animalSchema = new mongoose.Schema(
             unique: true
         },
 
-        species: {
-            type: String,
-            enum: ["volaille", "betail", "poisson"],
-            default: "volaille"
+        department: {
+            type: Schema.Types.ObjectId,
+            ref: "Department",
+            required: true
         },
 
         birthDate: {

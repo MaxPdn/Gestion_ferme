@@ -58,6 +58,10 @@ const handleSaveWeight = async (value) => {
 
   try {
     await addWeightAPI(id, value);
+
+    stats.value = await getStats(id);
+    anomaly.value = await getAnomaly(id);
+
   } catch (err) {
     animal.value.weights = oldWeights;
     console.error(err);
@@ -113,99 +117,71 @@ onMounted(async () => {
 </script>
 
 <template>
-<div class="p-8 bg-gray-50 min-h-screen text-gray-900">
+  <div class="p-8 bg-gray-50 min-h-screen text-gray-900">
 
-  <!-- LOADING -->
-  <div v-if="loading" class="flex items-center justify-center h-[60vh]">
-    <p class="text-gray-400 animate-pulse">Chargement...</p>
-  </div>
-
-  <!-- ERROR -->
-  <div v-else-if="error" class="flex flex-col items-center justify-center h-[60vh]">
-    <p class="text-red-500 font-semibold">Erreur de chargement</p>
-    <p class="text-gray-400 text-sm">Vérifie l'ID ou le serveur</p>
-  </div>
-
-  <!-- CONTENT -->
-  <div v-else>
-
-    <!-- BACK -->
-    <div class="mb-6">
-      <button 
-        @click="router.back()" 
-        class="flex items-center cursor-pointer gap-2 text-gray-500 hover:text-orange-500 transition px-3 py-2 rounded-lg hover:bg-gray-100"
-      >
-        ← Retour
-      </button>
+    <!-- LOADING -->
+    <div v-if="loading" class="flex items-center justify-center h-[60vh]">
+      <p class="text-gray-400 animate-pulse">Chargement...</p>
     </div>
 
-    <!-- HEADER -->
-    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-      <AnimalHeader :animal="animal" />
-      <AnimalActions @addWeight="addWeight" @addHealth="addHealth" />
+    <!-- ERROR -->
+    <div v-else-if="error" class="flex flex-col items-center justify-center h-[60vh]">
+      <p class="text-red-500 font-semibold">Erreur de chargement</p>
+      <p class="text-gray-400 text-sm">Vérifie l'ID ou le serveur</p>
     </div>
 
-    <!-- GRID -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+    <!-- CONTENT -->
+    <div v-else>
 
-      <!-- LEFT -->
-      <div class="space-y-6 lg:col-span-2">
-
-        <AnimalStatsCard v-if="stats" :stats="stats" />
-
-        <AnimalWeightChart
-          v-if="animal?.weights?.length"
-          :weights="animal.weights"
-        />
-
-        <AnimalAnomalyCard
-          v-if="anomaly"
-          :anomaly="anomaly"
-        />
-
-        <AnimalWeightSection
-          v-if="animal?.weights"
-          :weights="animal.weights"
-        />
-
-        <AnimalHealthSection
-          v-if="animal?.healthHistory"
-          :history="animal.healthHistory"
-        />
-
+      <!-- BACK -->
+      <div class="mb-6">
+        <button @click="router.back()"
+          class="flex items-center cursor-pointer gap-2 text-gray-500 hover:text-orange-500 transition px-3 py-2 rounded-lg hover:bg-gray-100">
+          ← Retour
+        </button>
       </div>
 
-      <!-- RIGHT -->
-      <div class="space-y-6">
+      <!-- HEADER -->
+      <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+        <AnimalHeader :animal="animal" />
+        <AnimalActions @addWeight="addWeight" @addHealth="addHealth" />
+      </div>
 
-        <AnimalQRCodeCard
-          v-if="qr"
-          :qr="qr"
-        />
+      <!-- GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
 
-        <AnimalMetaCard
-          v-if="animal"
-          :animal="animal"
-        />
+        <!-- LEFT -->
+        <div class="space-y-6 lg:col-span-2">
+
+          <AnimalStatsCard v-if="stats" :stats="stats" />
+
+          <AnimalWeightChart v-if="animal?.weights?.length" :weights="animal.weights" :key="animal.weights.length" />
+
+          <AnimalAnomalyCard v-if="anomaly" :anomaly="anomaly" />
+
+          <AnimalWeightSection v-if="animal?.weights" :weights="animal.weights" />
+
+          <AnimalHealthSection v-if="animal?.healthHistory" :history="animal.healthHistory" />
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="space-y-6">
+
+          <AnimalQRCodeCard v-if="qr" :qr="qr" />
+
+          <AnimalMetaCard v-if="animal" :animal="animal" />
+
+        </div>
 
       </div>
 
     </div>
 
+    <!-- MODALS -->
+    <AddWeightModal v-if="showWeightModal" @close="showWeightModal = false" @save="handleSaveWeight" />
+
+    <AddHealthModal v-if="showHealthModal" @close="showHealthModal = false" @save="handleSaveHealth" />
+
   </div>
-
-  <!-- MODALS -->
-  <AddWeightModal
-    v-if="showWeightModal"
-    @close="showWeightModal = false"
-    @save="handleSaveWeight"
-  />
-
-  <AddHealthModal
-    v-if="showHealthModal"
-    @close="showHealthModal = false"
-    @save="handleSaveHealth"
-  />
-
-</div>
 </template>

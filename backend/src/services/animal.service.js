@@ -1,12 +1,12 @@
 import { Animal } from "../models/Animal.js";
-import { Campaign } from "../models/Campaign.js";
+import Campaign  from "../models/Campaign.model.js";
 import { v4 as uuidv4 } from "uuid";
 import QRCode from "qrcode";
 
 /*-----------------------------------------------------------
     CREATE ANIMAL
 -----------------------------------------------------------*/
-export async function createAnimal({ campaign, code, birthDate, species }) {
+export async function createAnimal({ campaign, code, birthDate, department }) {
 
     if (!campaign) {
         const err = new Error("campaign is required");
@@ -24,7 +24,7 @@ export async function createAnimal({ campaign, code, birthDate, species }) {
         campaign,
         code: code.trim(),
         birthDate,
-        species,
+        department,
         qrCode: uuidv4()
     });
 
@@ -95,7 +95,14 @@ export async function addHealthEvent({ animalId, type, description }) {
 export async function getAnimal(animalId) {
 
     const animal = await Animal.findById(animalId)
-        .populate("campaign");
+        .populate({
+  path: "campaign",
+  select: "name department",
+  populate: {
+    path: "department",
+    select: "name"
+  }
+});
 
     if (!animal) {
         const err = new Error("Animal not found");
@@ -254,7 +261,7 @@ export async function getAnimals({ status, species, campaign, search }) {
 
     const query = {};
 
-    // 🟢 FILTRES
+    // FILTRES
     if (status) {
         query.status = status;
     }
@@ -267,14 +274,19 @@ export async function getAnimals({ status, species, campaign, search }) {
         query.campaign = campaign;
     }
 
-    // 🔍 SEARCH (code)
+    // SEARCH (code)
     if (search) {
         query.code = { $regex: search, $options: "i" };
     }
 
-    const animals = await Animal.find(query)
-        .populate("campaign")
-        .sort({ createdAt: -1 });
+const animals = await Animal.find()
+        .populate({
+            path: "campaign",
+            populate: {
+                path: "department",
+                select: "name"
+            }
+        });
 
     return animals;
 }

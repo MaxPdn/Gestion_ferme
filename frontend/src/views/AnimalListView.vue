@@ -111,7 +111,7 @@ const goToPage = (page) => {
     <!-- HEADER -->
     <div class="grid grid-cols-5 px-6 py-4 bg-gray-100 text-sm text-gray-600 font-semibold">
       <span>Code</span>
-      <span>Espèce</span>
+      <span>Département</span>
       <span>Statut</span>
       <span>Campagne</span>
       <span class="text-right">Action</span>
@@ -128,7 +128,7 @@ const goToPage = (page) => {
       </span>
 
       <span class="text-gray-500">
-        {{ animal.species }}
+        {{ animal.campaign?.department?.name.toUpperCase() || "Pas de Departement" }}
       </span>
 
       <!-- STATUS -->
