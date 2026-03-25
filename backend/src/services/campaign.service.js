@@ -22,29 +22,45 @@ export const deleteCampaign = async (id) => {
   return await Campaign.findByIdAndDelete(id);
 };
 
-// campaign.service.js
+// --- AJOUT DE PERTES ---
 export const addLosses = async (id, quantity) => {
   const campaign = await Campaign.findById(id);
-  if (!campaign) throw new Error("Campaign not found");
+  if (!campaign) throw new Error("Campagne introuvable");
 
-  // Mise à jour des compteurs
+  // 🔥 SÉCURITÉ : On ne peut pas perdre plus que ce qu'on a
+  if (quantity > campaign.currentCount) {
+    throw new Error(
+      `Action impossible : Il ne reste que ${campaign.currentCount} animaux.`,
+    );
+  }
+
   campaign.losses += quantity;
   campaign.currentCount -= quantity;
 
-  // 🔥 Ajout à l'historique pour les statistiques
+  // Historique pour tes graphiques
   campaign.lossHistory.push({ quantity, date: new Date() });
 
   await campaign.save();
   return campaign;
 };
 
+// --- AJOUT DE VENTES ---
 export const addSales = async (id, quantity) => {
   const campaign = await Campaign.findById(id);
+  if (!campaign) throw new Error("Campagne introuvable");
 
-  if (!campaign) throw new Error("Campaign not found");
+  // 🔥 NOUVELLE SÉCURITÉ : Vérification du statut
+  if (campaign.status !== "En cours") {
+    throw new Error(
+      `Vente impossible : La campagne est actuellement '${campaign.status}'. Elle doit être 'En cours'.`,
+    );
+  }
 
-  if (campaign.currentCount < quantity) {
-    throw new Error("Not enough animals");
+  // 🔥 SÉCURITÉ : On ne peut pas vendre plus que le stock actuel
+  if (quantity > campaign.currentCount) {
+    throw new Error(
+      `Vente impossible : Stock insuffisant (${campaign.currentCount} restants).`,
+    );
   }
 
   campaign.sold += quantity;

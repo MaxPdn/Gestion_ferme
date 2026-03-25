@@ -20,7 +20,6 @@ const fetchCampaign = async () => {
   try {
     const res = await getCampaign(route.params.id);
     campaign.value = res.data;
-    console.log(res.data);
   } catch (err) {
     console.error(err);
   } finally {
@@ -30,18 +29,61 @@ const fetchCampaign = async () => {
 
 onMounted(fetchCampaign);
 
+import { notify } from "@/composables/useNotify";
+
 const handleAddLoss = async () => {
-  if (lossInput.value <= 0) return;
-  await addLoss(campaign.value._id, Number(lossInput.value));
-  lossInput.value = 0;
-  await fetchCampaign();
+  const quantity = Number(lossInput.value);
+  if (quantity <= 0) return;
+
+  // 🛡️ Sécurité : Pas plus de pertes que d'animaux
+  if (quantity > campaign.value.currentCount) {
+    return notify(
+      `Impossible : il ne reste que ${campaign.value.currentCount} animaux.`,
+      "error",
+    );
+  }
+
+  try {
+    await addLoss(campaign.value._id, quantity);
+    notify("Perte enregistrée avec succès", "success");
+    lossInput.value = 0;
+    await fetchCampaign();
+  } catch (err) {
+    notify(
+      err.response?.data?.message || "Erreur lors de l'enregistrement",
+      "error",
+    );
+  }
 };
 
 const handleAddSale = async () => {
-  if (saleInput.value <= 0) return;
-  await addSale(campaign.value._id, Number(saleInput.value));
-  saleInput.value = 0;
-  await fetchCampaign();
+  const quantity = Number(saleInput.value);
+  if (quantity <= 0) return;
+
+  // 🛡️ Sécurité 1 : Campagne doit être active
+  if (campaign.value.status !== "active") {
+    return notify(
+      "Vente impossible : la campagne n'est pas 'En cours'.",
+      "error",
+    );
+  }
+
+  // 🛡️ Sécurité 2 : Stock suffisant
+  if (quantity > campaign.value.currentCount) {
+    return notify(
+      `Stock insuffisant : ${campaign.value.currentCount} restants.`,
+      "error",
+    );
+  }
+
+  try {
+    await addSale(campaign.value._id, quantity);
+    notify("Vente réussie ! 💰", "success");
+    saleInput.value = 0;
+    await fetchCampaign();
+  } catch (err) {
+    notify(err.response?.data?.message || "Erreur lors de la vente", "error");
+  }
 };
 
 const handleStatusChange = async (status) => {
@@ -231,18 +273,30 @@ const handleStatusChange = async (status) => {
         <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
           <div
             class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
+            :class="{
+              'opacity-50 grayscale-[0.5]': campaign.status !== 'active',
+            }"
           >
-            <h3 class="font-bold text-gray-800 mb-4">Signaler des Pertes</h3>
+            <h3 class="font-bold text-gray-800 mb-4 flex justify-between">
+              Enregistrer des Ventes
+              <span
+                v-if="campaign.status !== 'active'"
+                class="text-[10px] text-red-500 uppercase italic"
+                >Verrouillé</span
+              >
+            </h3>
             <div class="flex gap-2">
               <input
-                v-model="lossInput"
+                v-model="saleInput"
                 type="number"
-                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all"
-                placeholder="Ex: 2"
+                :disabled="campaign.status !== 'active'"
+                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all disabled:bg-gray-100"
+                placeholder="Ex: 5"
               />
               <button
-                @click="handleAddLoss"
-                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
+                @click="handleAddSale"
+                :disabled="campaign.status !== 'active'"
+                class="h-full bg-[#1e293b] text-white font-bold px-6 rounded-xl transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Valider
               </button>
