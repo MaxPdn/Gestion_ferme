@@ -5,6 +5,7 @@ import CampaignCreate from "../views/CampaignCreate.vue";
 import CampaignDetail from "../views/CampaignDetail.vue";
 import Departements from "@/views/Departements.vue";
 import Alert from "@/views/Alert.vue";
+import HealthView from "../views/HealthView.vue";
 
 import Login from "../views/Login.vue";
 import Home from "../views/Home.vue";
@@ -22,6 +23,7 @@ const routes = [
       { path: "/campaign/:id", component: CampaignDetail },
       { path: "/departements", component: Departements },
       { path: "/alerts", component: Alert },
+      { path: "/sante", component: HealthView },
       { path: "", component: Home },
       {
         path: "users",

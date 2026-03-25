@@ -15,6 +15,12 @@ export const getCampaignById = async (id) => {
     .populate("department", "name");
 };
 
+export const getCampaignByName = async (name) => {
+  if (!name) throw new Error("Name is required");
+  return await Campaign.findOne({ name: new RegExp(`^${name}$`, 'i') })
+    .populate("department", "name");
+};
+
 export const updateCampaign = async (id, data) => {
   return await Campaign.findByIdAndUpdate(id, data, { new: true });
 };
@@ -45,8 +51,10 @@ export const addSales = async (id, quantity) => {
 
   if (!campaign) throw new Error("Campaign not found");
 
+  console.log(`AddSales: CurrentCount=${campaign.currentCount}, QuantityRequested=${quantity}`);
+
   if (campaign.currentCount < quantity) {
-    throw new Error("Not enough animals");
+    throw new Error(`Not enough animals. Available: ${campaign.currentCount}, Requested: ${quantity}`);
   }
 
   campaign.sold += quantity;

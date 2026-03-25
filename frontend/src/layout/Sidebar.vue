@@ -29,7 +29,7 @@ const menuItems = [
   { icon: Layers, label: "Departements", path: "/departements" },
   { icon: Sprout, label: "Campagnes", path: "/campaigns" },
   { icon: User, label: "Suivi Individuel" },
-  { icon: HeartPulse, label: "Santé" },
+  { icon: HeartPulse, label: "Santé", path: "/sante" },
   { icon: Utensils, label: "Alimentation" },
   {
     icon: BadgeDollarSign,

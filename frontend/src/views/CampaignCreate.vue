@@ -87,6 +87,7 @@ const handleSubmit = async () => {
           <div v-if="error" class="flex items-center gap-3 p-4 rounded-xl bg-red-50/50 border border-red-100 text-red-600">
             <span class="text-lg">⚠️</span>
             <p class="text-sm font-bold">Campagne déjà existante</p>
+            <!-- <p class="text-sm font-bold">{{ error }}</p> -->
           </div>
         </transition>
 

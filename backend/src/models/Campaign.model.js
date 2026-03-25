@@ -31,13 +31,15 @@ const campaignSchema = new mongoose.Schema(
     initialCount: {
       type: Number,
       required: [true, 'Le nombre initial de sujets est obligatoire'],
+      min: [0, 'Le nombre initial ne peut pas être négatif'],
     },
 
     currentCount: {
       type: Number,
       default: function() {
       return this.initialCount;
-    }
+    },
+      min: [0, 'L\'effectif actuel ne peut pas être négatif'],
     },
 
     losses: {
@@ -85,7 +87,7 @@ campaignSchema.virtual("statusDynamic").get(function () {
 
 // Hook pour initialiser currentCount
 campaignSchema.pre("save", function () {
-  if (this.isNew) {
+  if (this.isNew && (this.currentCount === undefined || this.currentCount === null)) {
     this.currentCount = this.initialCount;
   }
 });

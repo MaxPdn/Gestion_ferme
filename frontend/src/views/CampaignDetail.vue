@@ -32,16 +32,24 @@ onMounted(fetchCampaign);
 
 const handleAddLoss = async () => {
   if (lossInput.value <= 0) return;
-  await addLoss(campaign.value._id, Number(lossInput.value));
-  lossInput.value = 0;
-  await fetchCampaign();
+  try {
+    await addLoss(campaign.value._id, Number(lossInput.value));
+    lossInput.value = 0;
+    await fetchCampaign();
+  } catch (err) {
+    alert(err.response?.data?.message || "Erreur lors de l'ajout de la perte");
+  }
 };
 
 const handleAddSale = async () => {
   if (saleInput.value <= 0) return;
-  await addSale(campaign.value._id, Number(saleInput.value));
-  saleInput.value = 0;
-  await fetchCampaign();
+  try {
+    await addSale(campaign.value._id, Number(saleInput.value));
+    saleInput.value = 0;
+    await fetchCampaign();
+  } catch (err) {
+    alert(err.response?.data?.message || "Erreur lors de l'ajout de la vente");
+  }
 };
 
 const handleStatusChange = async (status) => {
@@ -242,7 +250,7 @@ const handleStatusChange = async (status) => {
               />
               <button
                 @click="handleAddLoss"
-                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
+                class="h-full bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 rounded-xl transition-colors whitespace-nowrap py-3"
               >
                 Valider
               </button>
@@ -262,7 +270,7 @@ const handleStatusChange = async (status) => {
               />
               <button
                 @click="handleAddSale"
-                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
+                class="h-full bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 rounded-xl transition-colors whitespace-nowrap py-3"
               >
                 Valider
               </button>
