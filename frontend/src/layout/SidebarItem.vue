@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  icon: Object, // On attend maintenant un composant Lucide
+  icon: [Object, Function], // On attend maintenant un composant Lucide
   label: String,
   active: Boolean,
 });

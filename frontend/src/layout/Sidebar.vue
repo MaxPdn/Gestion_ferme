@@ -18,7 +18,7 @@ import {
 } from "lucide-vue-next";
 
 const isCollapsed = ref(false);
-const activeItem = ref("Financier");
+const activeItem = ref("Dashboard");
 
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value;
