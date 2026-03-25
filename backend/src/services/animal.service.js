@@ -126,31 +126,34 @@ export async function getAnimalStats(animalId) {
         throw err;
     }
 
-const weights = [...animal.weights].sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-);
+    const weights = animal.weights;
 
     if (weights.length === 0) {
         return {
             currentWeight: 0,
             averageWeight: 0,
-            growth: 0
+            growth: 0,
+            growthRate: 0
         };
     }
 
     const total = weights.reduce((sum, w) => sum + w.value, 0);
     const average = total / weights.length;
 
-    const currentWeight = weights[weights.length - 1].value;
+    const current = weights.at(-1).value;
 
-    const firstWeight = weights[0].value;
-    const growth = currentWeight - firstWeight;
-    const growthRate = firstWeight > 0 
-    ? (growth / firstWeight) * 100 
-    : 0;
+    let growth = 0;
+    let growthRate = 0;
+
+    if (weights.length >= 2) {
+        const prev = weights.at(-2).value;
+
+        growth = current - prev;
+        growthRate = prev ? (growth / prev) * 100 : 0;
+    }
 
     return {
-        currentWeight,
+        currentWeight: current,
         averageWeight: average,
         growth,
         growthRate
