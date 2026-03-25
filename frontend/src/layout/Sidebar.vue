@@ -30,7 +30,7 @@ const menuItems = [
   { icon: Sprout, label: "Campagnes", path: "/campaigns" },
   { icon: User, label: "Suivi Individuel" },
   { icon: HeartPulse, label: "Santé" },
-  { icon: Utensils, label: "Alimentation" },
+  { icon: Utensils, label: "Alimentation", path: "/alimentation" },
   {
     icon: BadgeDollarSign,
     label: "Financier",
@@ -46,7 +46,7 @@ const menuItems = [
 });
 const activeItem = ref("Dashboard");
 
-// 🔁 navigation réelle
+
 const selectItem = (item) => {
   activeItem.value = item.label;
   if (item.path) {
