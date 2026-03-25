@@ -38,7 +38,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/home" },
   { icon: Layers, label: "Departements", path: "/departements" },
   { icon: Sprout, label: "Campagnes", path: "/campaigns" },
-  { icon: User, label: "Suivi Individuel" },
+  { icon: User, label: "Suivi Individuel",path:"/animals" },
   { icon: HeartPulse, label: "Santé", path: "/sante" },
   { icon: Utensils, label: "Alimentation" },
   {

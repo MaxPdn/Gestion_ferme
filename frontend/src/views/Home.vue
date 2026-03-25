@@ -1,209 +1,220 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import CampaignStats from '../components/CampaignStats.vue';
-import QuickActions from '../components/QuickActions.vue';
-import CampaignCard from '../components/CampaignCard.vue';
-import { LogOut } from 'lucide-vue-next';
+import { useRouter } from "vue-router";
+import { notify } from '@/composables/useNotify';
 
 const router = useRouter();
-const user = JSON.parse(localStorage.getItem('user') || '{}');
+const stats = ref([]);
+const series = ref([{ name: 'Pertes', data: [] }]);
+const topAlerts = ref([]); 
+const isLoading = ref(true);
 
-// État
-const campaigns = ref([]);
-const stats = ref({
-  totalCampaigns: 0,
-  totalActive: 0,
-  totalAnimals: 0,
-  totalLosses: 0,
-  mortalityRate: 0,
-  monthlyGrowth: 5,
-  totalRevenue: 0,
-  revenueGrowth: 12
-});
+// --- États pour la modale de saisie rapide ---
+const isModalOpen = ref(false);
+const allCampaigns = ref([]);
+const selectedCampaign = ref("");
+const lossQuantity = ref(1);
 
-// Chargement des données
-onMounted(async () => {
-  try {
-    const resCampaigns = await axios.get('http://localhost:7000/api/campaigns');
-    campaigns.value = resCampaigns.data;
-    
-    // Calcul des stats
-    computeStats();
-  } catch (err) {
-    console.error('Erreur chargement données:', err);
+// 1. Générateur de jours dynamiques pour ApexCharts
+const generateDayLabels = () => {
+  const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  const labels = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    labels.push(days[d.getDay()]);
   }
-});
+  return labels;
+};
 
-const computeStats = () => {
-  const total = campaigns.value.length;
-  const active = campaigns.value.filter(c => c.status === 'active').length;
-  const totalAnimals = campaigns.value.reduce((sum, c) => sum + (c.currentNumber || 0), 0);
-  const totalLosses = campaigns.value.reduce((sum, c) => sum + (c.losses || 0), 0);
+const fetchDashboardData = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get("http://localhost:7000/api/campaigns/dashboard-stats", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    stats.value = res.data.stats || [];
+    series.value[0].data = res.data.chartData || [];
+    topAlerts.value = res.data.topAlerts || []; 
+    
+    // On récupère aussi la liste simple des campagnes pour la modale
+    const campRes = await axios.get("http://localhost:7000/api/campaigns", {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    allCampaigns.value = campRes.data;
+
+    isLoading.value = false;
+  } catch (err) {
+    console.error("Erreur lors de la récupération des stats:", err);
+    isLoading.value = false;
+  }
+};
+
+const submitLoss = async () => {
+  // Vérification avant même d'envoyer au serveur (Optionnel mais recommandé)
+  const currentCampaign = allCampaigns.value.find(c => c._id === selectedCampaign.value);
   
-  stats.value = {
-    totalCampaigns: total,
-    totalActive: active,
-    totalAnimals: totalAnimals,
-    totalLosses: totalLosses,
-    mortalityRate: totalAnimals > 0 ? (totalLosses / totalAnimals) * 100 : 0,
-    monthlyGrowth: 5,
-    totalRevenue: campaigns.value.reduce((sum, c) => sum + (c.revenue || 0), 0),
-    revenueGrowth: 12
-  };
+  if (lossQuantity.value > currentCampaign.currentCount) {
+    return notify(`Impossible : il ne reste que ${currentCampaign.currentCount} animaux.`);
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(`http://localhost:7000/api/campaigns/${selectedCampaign.value}/losses`, 
+      { quantity: lossQuantity.value },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    
+    notify("Perte enregistrée avec succès ! ✅"); // Notification de succès
+    isModalOpen.value = false;
+    await fetchDashboardData(); 
+  } catch (err) {
+    // Notification d'erreur venant du backend
+    notify(err.response?.data?.message || "Une erreur est survenue");
+  }
 };
 
-// Gérer les actions rapides
-const handleNewCampaign = () => router.push('/campaigns/new');
-const handleAddAnimal = () => router.push('/campaigns');
-const handleHealthCheck = () => router.push('/sante');
-const handleAddTransaction = () => router.push('/finance');
-const handleReportAlert = () => router.push('/alerts');
-const handleViewStocks = () => router.push('/departements');
-const handleGenerateReport = () => console.log('Rapport généré');
-const handleSettings = () => console.log('Paramètres');
-
-const handleViewCampaign = (campaign) => {
-  router.push(`/campaigns/${campaign._id}`);
-};
+onMounted(fetchDashboardData);
 
 const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  router.push('/');
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  router.push("/");
 };
 
-// Campagnes récentes
-const recentCampaigns = computed(() => {
-  return campaigns.value.slice(0, 4);
+const currentDate = new Date().toLocaleDateString('fr-FR', { 
+  weekday: 'long', day: 'numeric', month: 'long' 
+});
+
+const chartOptions = ref({
+  chart: { type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
+  colors: ['#1e293b'],
+  stroke: { curve: 'smooth', width: 3 },
+  fill: {
+    type: 'gradient',
+    gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0, stops: [0, 90, 100] }
+  },
+  dataLabels: { enabled: false },
+  xaxis: { 
+    categories: generateDayLabels(), // 🔥 Jours dynamiques ici
+    labels: { style: { colors: '#94a3b8', fontWeight: 600 } } 
+  },
+  grid: { borderColor: '#f1f5f9' }
 });
 </script>
 
 <template>
-  <div class="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-    <!-- Header -->
-    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
-      <div class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="min-w-0">
-            <h1 class="heading-1 text-slate-800">
-              Bienvenue, <span class="text-orange-600">{{ user.username || 'Utilisateur' }}</span>
-            </h1>
-            <p class="text-small text-slate-500 mt-2">
-              Supervisez vos campagnes agricoles en temps réel
-            </p>
-          </div>
-          <button 
-            @click="logout"
-            class="btn bg-red-600 hover:bg-red-700 text-white font-semibold self-start sm:self-auto"
-          >
-            <LogOut :size="18" />
-            Déconnexion
-          </button>
+  <div v-if="isLoading" class="h-screen flex items-center justify-center bg-slate-50">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e293b]"></div>
+  </div>
+
+  <div v-else class="min-h-screen font-serif bg-slate-50 p-4 md:p-10 font-sans antialiased text-slate-900">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
+      <div>
+        <h2 class="text-slate-500 font-bold uppercase text-[12px] tracking-widest">Tableau de Bord</h2>
+        <h1 class="text-2xl md:text-4xl font-black text-[#1e293b] tracking-tight">Bonjour, Admin 👋</h1>
+        <p class="text-slate-400 font-medium mt-1 text-sm md:text-base">{{ currentDate }} • <span class="text-[#F97316]">TerraCore</span></p>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+        <button @click="isModalOpen = true" class="w-full sm:w-auto bg-[#1e293b] text-white font-bold px-6 py-4 md:py-3 rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 active:scale-95">
+          <span class="text-xl">+</span> 
+          <span>Déclarer une perte</span>
+        </button>
+
+        <button @click="logout" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-600 font-bold px-6 py-4 md:py-3 rounded-2xl hover:bg-red-50 hover:text-red-600 transition-all shadow-sm active:scale-95">
+          <span>Déconnexion</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
+      <div v-for="stat in stats" :key="stat.label" class="bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white transition-all hover:translate-y-[-4px]">
+        <p class="text-slate-400 font-black uppercase text-[9px] md:text-[10px] tracking-widest mb-2 md:mb-3 leading-tight">{{ stat.label }}</p>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-1">
+          <span class="text-2xl md:text-3xl font-[900] text-[#1e293b]">{{ stat.value }}</span>
+          <span :class="stat.trendColor" class="text-[9px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full bg-opacity-10 w-fit">
+            {{ stat.trend }}
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- Contenu principal -->
-    <main class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-      <!-- Stats Dashboard -->
-      <section class="mb-10">
-        <h2 class="heading-2 text-slate-800 mb-6">Vue d'ensemble</h2>
-        <CampaignStats :stats="stats" />
-      </section>
-
-      <!-- Actions Rapides -->
-      <section class="mb-10">
-        <QuickActions
-          @new-campaign="handleNewCampaign"
-          @add-animal="handleAddAnimal"
-          @health-check="handleHealthCheck"
-          @add-transaction="handleAddTransaction"
-          @report-alert="handleReportAlert"
-          @view-stocks="handleViewStocks"
-          @generate-report="handleGenerateReport"
-          @settings="handleSettings"
-        />
-      </section>
-
-      <!-- Campagnes Récentes -->
-      <section>
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="heading-2 text-slate-800">Campagnes Actives</h2>
-          <button
-            @click="$router.push('/campaigns')"
-            class="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold self-start sm:self-auto"
-          >
-            Voir tout
-          </button>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+      
+      <div class="lg:col-span-2 bg-white p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
+        <div class="flex justify-between items-center mb-6 md:mb-8">
+          <h3 class="text-lg md:text-xl font-black text-[#1e293b]">Évolution de la mortalité</h3>
         </div>
-
-        <div v-if="recentCampaigns.length === 0" class="card text-center py-12">
-          <p class="text-slate-500 mb-4">Aucune campagne trouvée</p>
-          <button
-            @click="handleNewCampaign"
-            class="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-          >
-            Créer la première campagne
-          </button>
+        <div class="h-60 md:h-72">
+          <apexchart width="100%" height="100%" :options="chartOptions" :series="series"></apexchart>
         </div>
+      </div>
 
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <CampaignCard
-            v-for="campaign in recentCampaigns"
-            :key="campaign._id"
-            :campaign="campaign"
-            @view="handleViewCampaign(campaign)"
-          />
-        </div>
-      </section>
+      <div class="bg-white p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
+        <h3 class="text-lg md:text-xl font-black text-[#1e293b] mb-6 md:mb-8">Urgences</h3>
+        <div class="space-y-3 md:space-y-4">
+          <div v-for="alert in topAlerts" :key="alert.id" 
+               @click="router.push(`/campaign/${alert.id}`)"
+               class="group flex items-center justify-between p-4 md:p-5 bg-slate-50 rounded-[1.5rem] md:rounded-[2rem] border border-transparent hover:border-red-100 hover:bg-red-50/50 transition-all cursor-pointer">
+            <div class="flex items-center gap-3 md:gap-4">
+              <div class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white rounded-xl md:rounded-2xl shadow-sm flex-shrink-0">
+                <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+              </div>
+              <div class="min-w-0">
+                <p class="font-bold text-slate-800 text-xs md:text-sm truncate">{{ alert.building }}</p>
+                <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-tight">Seuil critique</p>
+              </div>
+            </div>
+            <p class="text-red-600 font-[900] text-lg md:text-xl ml-2">{{ alert.rate }}%</p>
+          </div>
 
-      <!-- Statistiques au bas -->
-      <section class="mt-10 pt-8 border-t border-slate-200">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="text-center p-4">
-            <p class="text-2xl font-black text-orange-600">{{ stats.totalCampaigns }}</p>
-            <p class="text-small text-slate-500 mt-2">Campagnes</p>
-          </div>
-          <div class="text-center p-4">
-            <p class="text-2xl font-black text-blue-600">{{ stats.totalActive }}</p>
-            <p class="text-small text-slate-500 mt-2">En cours</p>
-          </div>
-          <div class="text-center p-4">
-            <p class="text-2xl font-black text-green-600">{{ stats.totalAnimals }}</p>
-            <p class="text-small text-slate-500 mt-2">Animaux</p>
-          </div>
-          <div class="text-center p-4">
-            <p :class="['text-2xl font-black', stats.mortalityRate > 10 ? 'text-red-600' : 'text-orange-600']">
-              {{ stats.mortalityRate.toFixed(1) }}%
-            </p>
-            <p class="text-small text-slate-500 mt-2">Mortalité</p>
+          <div v-if="!topAlerts || topAlerts.length === 0" class="text-center py-8">
+            <p class="text-slate-400 font-bold text-sm italic">Tout est sous contrôle ✅</p>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
+
+    <Transition name="fade">
+      <div v-if="isModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 w-full max-w-md shadow-2xl border border-white max-h-[90vh] overflow-y-auto">
+          <h3 class="text-xl md:text-2xl font-black text-[#1e293b] mb-2">Nouvelle Perte</h3>
+          <p class="text-slate-400 text-sm mb-6 md:mb-8 font-medium leading-relaxed">Mise à jour de l'inventaire en direct.</p>
+          
+          <div class="space-y-4 md:space-y-6">
+            <div>
+              <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Sélectionner le bâtiment</label>
+              <select v-model="selectedCampaign" class="w-full bg-slate-50 border-none rounded-xl md:rounded-2xl p-4 mt-2 outline-none focus:ring-2 focus:ring-slate-100 font-bold text-slate-700 text-sm md:text-base">
+                <option value="" disabled>Choisir un lot...</option>
+                <option v-for="c in allCampaigns" :key="c._id" :value="c._id">{{ c.name }}</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Nombre de têtes</label>
+              <input v-model="lossQuantity" type="number" class="w-full bg-slate-50 border-none rounded-xl md:rounded-2xl p-4 mt-2 outline-none focus:ring-2 focus:ring-slate-100 font-bold text-slate-700 text-sm md:text-base" />
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2 md:gap-4 mt-8 md:mt-10">
+            <button @click="isModalOpen = false" class="order-2 sm:order-1 flex-1 py-4 font-bold text-slate-400 hover:text-slate-600 transition-colors">Annuler</button>
+            <button @click="submitLoss" class="order-1 sm:order-2 flex-1 py-4 font-bold bg-red-500 text-white rounded-xl md:rounded-2xl hover:bg-red-600 transition-all shadow-lg shadow-red-100 active:scale-95">Confirmer</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
 <style scoped>
-.card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 1.5rem;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-@media (min-width: 768px) {
-  .card {
-    padding: 2rem;
-    border-radius: 1.75rem;
-  }
-}
-
-.card:hover {
-  border-color: #f97316;
-  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.1);
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>

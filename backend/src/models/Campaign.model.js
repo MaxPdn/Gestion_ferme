@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+const lossEntrySchema = new mongoose.Schema({
+  quantity: { type: Number, required: true },
+  date: { type: Date, default: Date.now } // Enregistre l'instant T
+});
+
 const campaignSchema = new mongoose.Schema(
   {
     name: {
@@ -41,6 +46,8 @@ const campaignSchema = new mongoose.Schema(
     },
       min: [0, 'L\'effectif actuel ne peut pas être négatif'],
     },
+
+    lossHistory: [lossEntrySchema],
 
     losses: {
       type: Number,

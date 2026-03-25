@@ -239,6 +239,7 @@ const campaigns = ref([]);
 const loading = ref(true);
 const router = useRouter();
 
+// Nouveaux états pour la recherche et le filtre
 const searchQuery = ref("");
 const statusFilter = ref("all");
 
@@ -246,6 +247,8 @@ const fetchCampaigns = async () => {
   try {
     const res = await getCampaigns();
     campaigns.value = res.data;
+    // console.log(campaigns.value);
+    
   } catch (err) {
     console.error("Erreur chargement campagnes", err);
   } finally {
@@ -253,6 +256,7 @@ const fetchCampaigns = async () => {
   }
 };
 
+// Calcul des campagnes filtrées
 const filteredCampaigns = computed(() => {
   return campaigns.value.filter((campaign) => {
     const matchesSearch = campaign.name

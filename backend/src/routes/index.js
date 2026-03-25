@@ -1,4 +1,5 @@
 import { Router } from "express";
+import animalRoutes from "./animal.route.js";
 import authRoutes from "./authRoutes.js";
 import userRoutes from "./userRoutes.js";
 import healthRoutes from "./healthRoutes.js";
@@ -16,4 +17,6 @@ router.use('/campaigns', campaignRoutes);
 router.use('/departments', departmentRoutes);
 router.use('/finance', financeRoutes);
 
+
+router.use("/animals", animalRoutes);
 export default router;

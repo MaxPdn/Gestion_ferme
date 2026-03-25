@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory } from "vue-router";
-
+import { createRouter, createWebHistory } from 'vue-router'
+import AnimalListView from '@/views/AnimalListView.vue'
+import AnimalView from '@/views/AnimalView.vue'
 import CampaignList from "../views/CampaignList.vue";
 import CampaignCreate from "../views/CampaignCreate.vue";
 import CampaignDetail from "../views/CampaignDetail.vue";
@@ -39,6 +40,15 @@ const routes = [
           }
         },
       },
+      {
+        path: "/animals",
+        component: AnimalListView
+      },
+      {
+        path: '/animal/:id',
+        name: 'animal',
+        component: AnimalView
+      }
     ],
   },
 ];

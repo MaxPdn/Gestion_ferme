@@ -68,24 +68,57 @@ const campaignStats = computed(() => {
 });
 
 const handleAddLoss = async () => {
-  if (lossInput.value <= 0) return;
+  const quantity = Number(lossInput.value);
+  if (quantity <= 0) return;
+
+  // 🛡️ Sécurité : Pas plus de pertes que d'animaux
+  if (quantity > campaign.value.currentCount) {
+    return notify(
+      `Impossible : il ne reste que ${campaign.value.currentCount} animaux.`,
+      "error",
+    );
+  }
+
   try {
-    await addLoss(campaign.value._id, Number(lossInput.value));
+    await addLoss(campaign.value._id, quantity);
+    notify("Perte enregistrée avec succès", "success");
     lossInput.value = 0;
     await fetchCampaign();
   } catch (err) {
-    alert(err.response?.data?.message || "Erreur lors de l'ajout de la perte");
+    notify(
+      err.response?.data?.message || "Erreur lors de l'enregistrement",
+      "error",
+    );
   }
 };
 
 const handleAddSale = async () => {
-  if (saleInput.value <= 0) return;
+  const quantity = Number(saleInput.value);
+  if (quantity <= 0) return;
+
+  // 🛡️ Sécurité 1 : Campagne doit être active
+  if (campaign.value.status !== "active") {
+    return notify(
+      "Vente impossible : la campagne n'est pas 'En cours'.",
+      "error",
+    );
+  }
+
+  // 🛡️ Sécurité 2 : Stock suffisant
+  if (quantity > campaign.value.currentCount) {
+    return notify(
+      `Stock insuffisant : ${campaign.value.currentCount} restants.`,
+      "error",
+    );
+  }
+
   try {
-    await addSale(campaign.value._id, Number(saleInput.value));
+    await addSale(campaign.value._id, quantity);
+    notify("Vente réussie ! 💰", "success");
     saleInput.value = 0;
     await fetchCampaign();
   } catch (err) {
-    alert(err.response?.data?.message || "Erreur lors de l'ajout de la vente");
+    notify(err.response?.data?.message || "Erreur lors de la vente", "error");
   }
 };
 
@@ -179,20 +212,20 @@ const handleStatusChange = async (status) => {
           </div>
         </div>
 
-        <!-- Actions Panel -->
-        <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
-            <h3 class="font-black text-slate-800 mb-6 flex items-center gap-3">
-              <span class="w-1.5 h-5 bg-red-500 rounded-full"></span>
-              Signaler des Pertes
-            </h3>
-            <div class="flex gap-3">
+        <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
+          <div
+            class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
+          >
+            <h3 class="font-bold text-gray-800 mb-4">Signaler des Pertes</h3>
+
+            <div class="flex gap-2">
               <input
                 v-model="lossInput"
                 type="number"
                 class="flex-1 bg-slate-50 border-slate-200 border rounded-2xl px-4 py-4 font-black text-slate-700 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 focus:outline-none transition-all"
                 placeholder="0"
               />
+
               <button
                 @click="handleAddLoss"
                 class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-8 rounded-2xl transition-all active:scale-95 shadow-lg shadow-slate-900/10"
@@ -202,21 +235,32 @@ const handleStatusChange = async (status) => {
             </div>
           </div>
 
-          <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
-            <h3 class="font-black text-slate-800 mb-6 flex items-center gap-3">
-              <span class="w-1.5 h-5 bg-green-500 rounded-full"></span>
+          <div
+            class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
+            :class="{
+              'opacity-50 grayscale-[0.5]': campaign.status !== 'active',
+            }"
+          >
+            <h3 class="font-bold text-gray-800 mb-4 flex justify-between">
               Enregistrer des Ventes
+              <span
+                v-if="campaign.status !== 'active'"
+                class="text-[10px] text-red-500 uppercase italic"
+                >Verrouillé</span
+              >
             </h3>
-            <div class="flex gap-3">
+            <div class="flex gap-2">
               <input
                 v-model="saleInput"
                 type="number"
-                class="flex-1 bg-slate-50 border-slate-200 border rounded-2xl px-4 py-4 font-black text-slate-700 focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:outline-none transition-all"
-                placeholder="0"
+                :disabled="campaign.status !== 'active'"
+                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all disabled:bg-gray-100"
+                placeholder="Ex: 5"
               />
               <button
                 @click="handleAddSale"
-                class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-8 rounded-2xl transition-all active:scale-95 shadow-lg shadow-slate-900/10"
+                :disabled="campaign.status !== 'active'"
+                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
               >
                 OK
               </button>
