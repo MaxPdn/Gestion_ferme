@@ -8,6 +8,7 @@ router.get("/dashboard-stats",getDashboardStats);
 // CRUD
 router.post("/", campaignController.create);
 router.get("/", campaignController.getAll);
+router.get("/search", campaignController.getByName); // Route spécifique AVANT :id
 router.get("/:id", campaignController.getOne);
 router.put("/:id", campaignController.update);
 router.delete("/:id", campaignController.remove);

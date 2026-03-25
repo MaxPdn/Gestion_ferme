@@ -14,6 +14,12 @@ export const getCampaignById = async (id) => {
   return await Campaign.findById(id).populate("department", "name");
 };
 
+export const getCampaignByName = async (name) => {
+  if (!name) throw new Error("Name is required");
+  return await Campaign.findOne({ name: new RegExp(`^${name}$`, 'i') })
+    .populate("department", "name");
+};
+
 export const updateCampaign = async (id, data) => {
   return await Campaign.findByIdAndUpdate(id, data, { new: true });
 };
@@ -56,11 +62,10 @@ export const addSales = async (id, quantity) => {
     );
   }
 
-  // 🔥 SÉCURITÉ : On ne peut pas vendre plus que le stock actuel
-  if (quantity > campaign.currentCount) {
-    throw new Error(
-      `Vente impossible : Stock insuffisant (${campaign.currentCount} restants).`,
-    );
+  console.log(`AddSales: CurrentCount=${campaign.currentCount}, QuantityRequested=${quantity}`);
+
+  if (campaign.currentCount < quantity) {
+    throw new Error(`Not enough animals. Available: ${campaign.currentCount}, Requested: ${quantity}`);
   }
 
   campaign.sold += quantity;

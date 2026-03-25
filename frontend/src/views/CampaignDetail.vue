@@ -286,7 +286,7 @@ const handleStatusChange = async (status) => {
 
               <button
                 @click="handleAddLoss"
-                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
+                class="h-full bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 rounded-xl transition-colors whitespace-nowrap py-3"
               >
                 Valider
               </button>

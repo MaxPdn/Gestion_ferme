@@ -1,10 +1,12 @@
-import { createRouter, createWebHistory } from "vue-router";
-
+import { createRouter, createWebHistory } from 'vue-router'
+import AnimalListView from '@/views/AnimalListView.vue'
+import AnimalView from '@/views/AnimalView.vue'
 import CampaignList from "../views/CampaignList.vue";
 import CampaignCreate from "../views/CampaignCreate.vue";
 import CampaignDetail from "../views/CampaignDetail.vue";
 import Departements from "@/views/Departements.vue";
 import Alert from "@/views/Alert.vue";
+import HealthView from "../views/HealthView.vue";
 
 import Login from "../views/Login.vue";
 import Home from "../views/Home.vue";
@@ -22,6 +24,7 @@ const routes = [
       { path: "/campaign/:id", component: CampaignDetail },
       { path: "/departements", component: Departements },
       { path: "/alerts", component: Alert },
+      { path: "/sante", component: HealthView },
       { path: "", component: Home },
       {
         path: "users",
@@ -35,6 +38,15 @@ const routes = [
           }
         },
       },
+      {
+        path: "/animals",
+        component: AnimalListView
+      },
+      {
+        path: '/animal/:id',
+        name: 'animal',
+        component: AnimalView
+      }
     ],
   },
 ];
