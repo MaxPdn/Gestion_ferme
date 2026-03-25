@@ -49,3 +49,13 @@ export async function updateStatus(id, status) {
   const res = await api.patch(`/animals/${id}/status`, { status });
   return res.data.animal;
 }
+
+export const deleteAnimal = async (id) => {
+  try {
+    const res = await api.delete(`/animals/${id}/delete`);
+    return res.data; 
+  } catch (err) {
+    console.error("Erreur suppression animal :", err.response?.data || err.message);
+    throw err;
+  }
+};

@@ -9,7 +9,7 @@ const emit = defineEmits(["addWeight", "addHealth"]);
 
   <button
     @click="$emit('addWeight')"
-    class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl transition font-medium shadow-sm"
+    class="flex items-center cursor-pointer gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl transition font-medium shadow-sm"
   >
     <Plus :size="16" />
     Poids
@@ -17,7 +17,7 @@ const emit = defineEmits(["addWeight", "addHealth"]);
 
   <button
     @click="$emit('addHealth')"
-    class="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-xl transition font-medium"
+    class="flex items-center cursor-pointer gap-2 bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-xl transition font-medium"
   >
     <Activity :size="16" />
     Santé

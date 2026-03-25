@@ -7,6 +7,7 @@ import {
     getAnimalStats,
     updateAnimalStatus,
     detectAnomaly,
+    deleteAnimal,
     generateQRCode
 } from "../services/animal.service.js";
 
@@ -134,3 +135,32 @@ export async function updateStatusController(req, res, next) {
         return next(err);
     }
 }
+
+/*-----------------------------------------------------------
+    DELETE ANIMAL
+-----------------------------------------------------------*/
+export const remove = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await deleteAnimal(id);
+
+    res.status(200).json({
+      message: "Animal supprimé avec succès"
+    });
+
+  } catch (err) {
+
+    if (err.message === "NOT_FOUND") {
+      return res.status(404).json({
+        message: "Animal introuvable"
+      });
+    }
+
+    console.error("deleteAnimal error:", err);
+
+    res.status(500).json({
+      message: "Erreur serveur"
+    });
+  }
+};

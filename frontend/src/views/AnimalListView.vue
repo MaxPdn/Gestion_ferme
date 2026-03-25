@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { getAnimals, createAnimal } from "@/services/animalService";
+import { getAnimals, createAnimal, deleteAnimal } from "@/services/animalService";
 import { useRouter } from "vue-router";
 import AddAnimalModal from "@/components/animal-component/form/AddAnimalModal.vue";
 
@@ -23,6 +23,26 @@ const handleCreateAnimal = async (data) => {
     
   } catch (err) {
     console.error(err);
+  }
+};
+
+
+const handleDelete = async (id) => {
+  const confirmDelete = confirm("Supprimer cet animal ?");
+
+  if (!confirmDelete) return;
+
+  const oldAnimals = [...animals.value];
+
+  animals.value = animals.value.filter(a => a._id !== id);
+
+  try {
+    await deleteAnimal(id);
+  } catch (err) {
+    console.error(err);
+
+    // rollback si erreur
+    animals.value = oldAnimals;
   }
 };
 
@@ -69,7 +89,7 @@ const goToPage = (page) => {
 
     <button
       @click="showModal = true"
-      class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-medium"
+      class="bg-orange-500 cursor-pointer hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-medium"
     >
       + Ajouter un animal
     </button>
@@ -126,16 +146,24 @@ const goToPage = (page) => {
       </span>
 
       <span class="text-gray-500">
-        {{ animal.campaign?.name || "N/A" }}
+        {{ animal.campaign?.name || "Pas de Campagne" }}
       </span>
 
-      <div class="text-right">
+      <div class="flex justify-end gap-3">
+        <!-- VOIR -->
         <button
-          class="text-orange-500 hover:text-orange-600 font-medium text-sm"
+          class="text-orange-500 cursor-pointer hover:text-orange-600 font-medium text-sm"
           @click="router.push(`/animal/${animal._id}`)"
         >
           Voir →
         </button>
+          <!-- DELETE -->
+  <button
+    @click="handleDelete(animal._id)"
+    class="text-red-500 cursor-pointer hover:text-red-600 text-sm"
+  >
+    Supprimer
+  </button>
       </div>
     </div>
   </div>

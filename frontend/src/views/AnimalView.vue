@@ -133,7 +133,7 @@ onMounted(async () => {
     <div class="mb-6">
       <button 
         @click="router.back()" 
-        class="flex items-center gap-2 text-gray-500 hover:text-orange-500 transition px-3 py-2 rounded-lg hover:bg-gray-100"
+        class="flex items-center cursor-pointer gap-2 text-gray-500 hover:text-orange-500 transition px-3 py-2 rounded-lg hover:bg-gray-100"
       >
         ← Retour
       </button>

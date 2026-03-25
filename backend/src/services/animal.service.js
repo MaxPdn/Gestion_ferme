@@ -304,3 +304,20 @@ export async function updateAnimalStatus({ animalId, status }) {
 
     return animal;
 }
+
+
+/*-----------------------------------------------------------
+    DELETE ANIMAL
+-----------------------------------------------------------*/
+export const deleteAnimal = async (id) => {
+
+  const animal = await Animal.findById(id);
+
+  if (!animal) {
+    throw new Error("NOT_FOUND");
+  }
+
+  await Animal.findByIdAndDelete(id);
+
+  return true;
+};

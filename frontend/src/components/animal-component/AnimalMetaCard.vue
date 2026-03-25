@@ -51,7 +51,7 @@ const changeStatus = async () => {
   <select
     v-model="localStatus"
     @change="changeStatus"
-    class="w-full p-2 rounded-lg bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-orange-500 outline-none"
+    class="w-full p-2 rounded-lg cursor-pointer bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-orange-500 outline-none"
   >
     <option value="vivant">Vivant</option>
     <option value="mort">Mort</option>
