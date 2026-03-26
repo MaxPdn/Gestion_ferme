@@ -146,7 +146,7 @@ const fetchCampaigns = async () => {
 
 const inspectCampaign = (id) => {
   // Navigation vers la page de détails de la campagne
-  router.push(`/campaign/${id}`);
+  router.push(`/home/campaign/${id}`);
 };
 
 // --- Cycle de vie ---

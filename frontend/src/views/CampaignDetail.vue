@@ -360,7 +360,7 @@ const handleStatusChange = async (status) => {
               </span>
             </div>
             <button 
-              @click="router.push('/finance')"
+              @click="router.push('/home/finance')"
               class="flex-1 md:flex-none bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
             >
               <Plus :size="16" />

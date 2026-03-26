@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-// 🔒 Appliquer la protection à toutes les routes
+// Appliquer la protection à toutes les routes
 router.use(protect);
 
 // Routes pour la santé d'une campagne spécifique

@@ -51,7 +51,7 @@ const handleSubmit = async () => {
       initialCount: Number(form.value.initialCount),
       budget: Number(form.value.budget || 0),
     });
-    router.push("/campaigns");
+    router.push("/home/campaigns");
   } catch (err) {
     error.value = err.response?.data?.message || "Erreur lors de la création";
   } finally {

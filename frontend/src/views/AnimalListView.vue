@@ -24,7 +24,7 @@ const handleCreateAnimal = async (data) => {
 
     showModal.value = false;
 
-    router.push(`/animal/${newAnimal._id}`);
+    router.push(`/home/animal/${newAnimal._id}`);
     
   } catch (err) {
     console.error(err);
@@ -163,7 +163,7 @@ const goToPage = (page) => {
         <!-- VOIR -->
         <button
           class="text-orange-500 cursor-pointer hover:text-orange-600 font-medium text-sm"
-          @click="router.push(`/animal/${animal._id}`)"
+          @click="router.push(`/home/animal/${animal._id}`)"
         >
           Voir →
         </button>

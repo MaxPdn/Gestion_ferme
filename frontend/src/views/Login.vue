@@ -20,9 +20,13 @@ const login = async () => {
     localStorage.setItem("user", JSON.stringify(res.data.user));
 
     router.push("/home");
+    email.value = ''
+password.value = ''
 
   } catch (err) {
     notify(err.response?.data?.message || "Erreur de connexion");
+   email.value = ''
+password.value = ''
   }
 };
 </script>

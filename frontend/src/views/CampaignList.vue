@@ -274,8 +274,8 @@ onMounted(() => {
 });
 onRefresh(fetchCampaigns);
 
-const goToDetail = (id) => router.push(`/campaign/${id}`);
-const goToCreate = () => router.push("/create");
+const goToDetail = (id) => router.push(`/home/campaign/${id}`);
+const goToCreate = () => router.push("/home/create");
 
 const getProgress = (campaign) => {
   const total =
