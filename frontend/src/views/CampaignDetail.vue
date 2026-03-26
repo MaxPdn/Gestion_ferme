@@ -1,17 +1,35 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
 import {
   getCampaign,
   addLoss,
   addSale,
   updateStatus,
 } from "../services/campaignService";
+import { useFinanceStore } from "../stores/financeStore";
+import { 
+  Plus, 
+  Trash2, 
+  BadgeDollarSign, 
+  TrendingUp, 
+  TrendingDown,
+  PieChart,
+  ChevronLeft,
+  Users,
+  Info,
+  Calendar,
+  CheckCircle2
+} from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
+const financeStore = useFinanceStore();
+
 const campaign = ref(null);
 const loading = ref(true);
+const campaignTransactions = ref([]);
 
 const lossInput = ref(0);
 const saleInput = ref(0);
@@ -20,7 +38,12 @@ const fetchCampaign = async () => {
   try {
     const res = await getCampaign(route.params.id);
     campaign.value = res.data;
-    console.log(res.data);
+    
+    // Charger les transactions de la campagne
+    const transRes = await axios.get(`http://localhost:7000/api/finance/campaign/${route.params.id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    campaignTransactions.value = transRes.data.data;
   } catch (err) {
     console.error(err);
   } finally {
@@ -30,18 +53,73 @@ const fetchCampaign = async () => {
 
 onMounted(fetchCampaign);
 
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(amount);
+};
+
+const campaignStats = computed(() => {
+  const recettes = campaignTransactions.value
+    .filter(t => t.type === 'recette')
+    .reduce((acc, t) => acc + t.amount, 0);
+  const dépenses = campaignTransactions.value
+    .filter(t => t.type === 'dépense')
+    .reduce((acc, t) => acc + t.amount, 0);
+  return { recettes, dépenses, balance: recettes - dépenses };
+});
+
 const handleAddLoss = async () => {
-  if (lossInput.value <= 0) return;
-  await addLoss(campaign.value._id, Number(lossInput.value));
-  lossInput.value = 0;
-  await fetchCampaign();
+  const quantity = Number(lossInput.value);
+  if (quantity <= 0) return;
+
+  // 🛡️ Sécurité : Pas plus de pertes que d'animaux
+  if (quantity > campaign.value.currentCount) {
+    return notify(
+      `Impossible : il ne reste que ${campaign.value.currentCount} animaux.`,
+      "error",
+    );
+  }
+
+  try {
+    await addLoss(campaign.value._id, quantity);
+    notify("Perte enregistrée avec succès", "success");
+    lossInput.value = 0;
+    await fetchCampaign();
+  } catch (err) {
+    notify(
+      err.response?.data?.message || "Erreur lors de l'enregistrement",
+      "error",
+    );
+  }
 };
 
 const handleAddSale = async () => {
-  if (saleInput.value <= 0) return;
-  await addSale(campaign.value._id, Number(saleInput.value));
-  saleInput.value = 0;
-  await fetchCampaign();
+  const quantity = Number(saleInput.value);
+  if (quantity <= 0) return;
+
+  // 🛡️ Sécurité 1 : Campagne doit être active
+  if (campaign.value.status !== "active") {
+    return notify(
+      "Vente impossible : la campagne n'est pas 'En cours'.",
+      "error",
+    );
+  }
+
+  // 🛡️ Sécurité 2 : Stock suffisant
+  if (quantity > campaign.value.currentCount) {
+    return notify(
+      `Stock insuffisant : ${campaign.value.currentCount} restants.`,
+      "error",
+    );
+  }
+
+  try {
+    await addSale(campaign.value._id, quantity);
+    notify("Vente réussie ! 💰", "success");
+    saleInput.value = 0;
+    await fetchCampaign();
+  } catch (err) {
+    notify(err.response?.data?.message || "Erreur lors de la vente", "error");
+  }
 };
 
 const handleStatusChange = async (status) => {
@@ -51,176 +129,82 @@ const handleStatusChange = async (status) => {
 </script>
 
 <template>
-  <div class="p-8 font-serif bg-gray-50 min-h-screen">
+  <div class="p-4 md:p-8 font-serif bg-slate-50 min-h-screen">
+    <!-- Header with Back Button -->
     <div class="flex items-center gap-4 mb-8">
       <button
         @click="router.back()"
-        class="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100 transition"
+        class="p-3 bg-white rounded-2xl shadow-sm hover:bg-slate-100 transition-all active:scale-95 text-slate-600 border border-slate-100"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-600"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
+        <ChevronLeft :size="24" />
       </button>
       <div>
-        <h1 class="text-3xl font-extrabold text-gray-900" v-if="campaign">
+        <h1 class="text-2xl md:text-3xl font-black text-slate-800" v-if="campaign">
           {{ campaign.name }}
         </h1>
-        <p class="text-gray-500 text-x">Gestion détaillée de la campagne</p>
+        <p class="text-slate-500 text-sm font-medium">Gestion détaillée de la campagne</p>
       </div>
     </div>
 
-    <div v-if="!loading && campaign" class="space-y-6">
+    <div v-if="!loading && campaign" class="space-y-8">
+      <!-- Top Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div
-          class="bg-white p-6 rounded-3xl shadow-sm border-l-4 border-blue-500 flex items-center justify-between"
-        >
+        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 flex items-center justify-between group hover:border-blue-200 transition-colors">
           <div>
-            <p class="text-sm font-bold text-gray-400 uppercase">
-              Effectif Actuel
-            </p>
-            <p class="text-3xl font-black text-gray-800">
-              {{ campaign.currentCount }}
-            </p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Effectif Actuel</p>
+            <p class="text-3xl font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ campaign.currentCount }}</p>
           </div>
-          <div class="p-3 bg-blue-50 rounded-2xl text-blue-500 text-2xl">
-            <svg
-              fill="#000000"
-              width="30px"
-              height="30px"
-              viewBox="0 0 512 512"
-              enable-background="new 0 0 512 512"
-              id="goat"
-              version="1.1"
-              xml:space="preserve"
-              xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
-            >
-              <g>
-                <circle cx="95.544" cy="120.129" r="6.092" />
-
-                <path
-                  d="M52.036,158.65c1.529,13.043,8.456,25.276,19.531,34.188c1.654,1.332,3.709,2.02,5.784,2.02c1.37,0,2.75-0.3,4.028-0.912   c3.071-1.47,4.979-4.442,4.979-7.756v-19.708c2.89,0.85,5.969,1.582,9.218,2.154v46.601c0,24.491,7.338,47.76,20.436,67.261   l30.402,78.248l-5.061,91.254h-5.504c-3.59,0-6.5,2.91-6.5,6.5s2.91,6.5,6.5,6.5h40.902l7.313-103.351l40.502,90.348h-3.648   c-3.59,0-6.5,2.91-6.5,6.5s2.91,6.5,6.5,6.5h47.245l-30.653-69.636c-6.601-14.988-9.074-26.249-9.987-33.057   c-0.29-2.164-0.415-4.411-0.372-6.679c0.033-1.763,0.161-3.505,0.381-5.196c2.581-3.535,4.789-7.291,6.604-11.219   c15.688,3.727,32.82,5.542,52.244,5.542c8.686,0,17.202-0.698,25.643-2.111c2.37,6.864,6.051,11.126,14.018,17.157   c6.631,5.023,10.526,12.397,10.775,20.338l-19.32,71.86h-6.001c-3.59,0-6.5,2.91-6.5,6.5s2.91,6.5,6.5,6.5h34.024l15.615-53.536   v40.539h-1.31c-3.59,0-6.5,2.91-6.5,6.5s2.91,6.5,6.5,6.5h33.935v-62.789l5.899-49.619c1.415-9.813-2.642-14.166-5.192-15.889   c-6.181-4.178-9.281-11.393-9.464-22.039l2.397-7.32c8.089,16.843,25.315,28.5,45.215,28.5h18.79   c18.397,0,33.311-14.914,33.311-33.311v-6.501h-44.66c-13.181,0-24.049-10.626-24.009-23.807   c0.109-36.64-29.666-66.483-66.281-66.483h-18.033c-0.018,0-0.035-0.001-0.053-0.001h-20.183c-3.59,0-6.5,2.91-6.5,6.5   s2.91,6.5,6.5,6.5h20.183v0.001h0.053c15.166,0.016,29.41,6.717,39.091,18.394c7.306,8.814,11.341,19.66,11.68,30.858h-0.014v3.225   c-0.086,2.594-0.358,5.198-0.848,7.792l-1.846,9.785l-7.802,23.818v1.038c0,15.427,4.98,26.714,14.808,33.556   c0.13,0.471,0.271,1.623-0.018,3.584l-5.979,50.266l-0.046,0.383v50.559h-6.625v-80.289c0-1.725-0.111-3.457-0.331-5.154   l-0.065-0.5c-0.015-0.098-0.028-0.195-0.043-0.291l-0.033-0.209c-0.053-0.33-0.108-0.647-0.163-0.932   c-0.03-0.186-0.063-0.375-0.1-0.561l-0.072-0.371c-0.092-0.451-0.191-0.897-0.291-1.294c-0.115-0.475-0.233-0.948-0.369-1.413   c-0.085-0.317-0.179-0.629-0.286-0.977c-0.105-0.354-0.218-0.712-0.342-1.057c-0.187-0.561-0.39-1.119-0.576-1.611   c-0.069-0.187-0.143-0.367-0.216-0.546l-0.086-0.212c-0.231-0.561-0.476-1.121-0.698-1.586c-0.229-0.494-0.461-0.978-0.734-1.511   c-0.269-0.514-0.549-1.027-0.834-1.517c-1.025-1.769-2.185-3.451-3.506-5.074c-0.302-0.36-0.605-0.721-0.951-1.104l-0.281-0.308   c-0.342-0.379-0.695-0.744-1.06-1.109c-0.329-0.341-0.678-0.679-0.988-0.967c-0.267-0.254-0.533-0.496-0.812-0.737   c-0.32-0.286-0.642-0.56-0.963-0.817c-0.192-0.163-0.387-0.316-0.588-0.473c-0.38-0.311-0.778-0.605-1.181-0.898   c-0.29-0.21-0.58-0.426-0.857-0.652c-0.197-0.16-0.387-0.32-0.577-0.488l-0.33-0.291l-0.024-0.018   c-0.153-0.137-0.305-0.276-0.453-0.418c-0.065-0.064-0.131-0.126-0.197-0.186c-0.194-0.189-0.383-0.379-0.562-0.563   c-0.226-0.234-0.451-0.477-0.656-0.696c-0.662-0.73-1.319-1.544-2.006-2.488c-0.153-0.203-0.298-0.416-0.472-0.668   c-0.55-0.787-1.059-1.589-1.512-2.385l-0.131-0.221c-0.128-0.205-0.248-0.424-0.362-0.635l-0.078-0.14   c-0.17-0.294-0.322-0.589-0.477-0.89l-0.06-0.114c-0.178-0.331-0.348-0.663-0.498-0.978l-0.157-0.33   c-0.112-0.235-0.225-0.469-0.331-0.707l-0.064-0.139c-0.122-0.257-0.239-0.514-0.352-0.773l-0.19-0.443   c-0.125-0.295-0.252-0.595-0.403-0.973c-0.129-0.311-0.26-0.619-0.373-0.93l-0.093-0.238c-0.052-0.128-0.104-0.262-0.15-0.389   l-0.057-0.152c-0.093-0.238-0.178-0.478-0.268-0.732l-0.043-0.117c-0.126-0.347-0.252-0.693-0.387-1.098   c-0.287-0.843-0.556-1.693-0.821-2.572c-0.124-0.408-0.247-0.814-0.361-1.217c-0.271-0.961-0.525-1.92-0.759-2.873   c-0.13-0.531-0.252-1.044-0.366-1.536c-0.568-2.495-1.06-5.1-1.46-7.741l-0.018-0.107c-0.033-0.196-0.06-0.391-0.087-0.582   l-0.071-0.498c-0.048-0.313-0.089-0.621-0.13-0.924l-0.136-1.043c-0.056-0.456-0.11-0.901-0.159-1.333   c-0.237-2.108-0.414-4.181-0.54-6.331c-0.011-0.294-0.023-0.571-0.042-0.832l-0.022-0.547c-0.079-2.461-1.374-4.706-3.467-6.004   c-2.098-1.304-4.695-1.471-6.944-0.443c-8.408,3.834-32.643,10.985-48.985,10.985c-27.25,0-40.015-6.774-46.851-10.402   c-2.933-1.573-6.572-1.003-8.895,1.511c-1.773,1.921-2.313,4.691-1.582,7.201c2.173,7.46,3.889,18.938-0.122,31.518   c-0.317,0.982-0.603,1.808-0.868,2.514c-1.818,4.81-4.362,9.354-7.563,13.507l-0.997,1.294l-0.267,1.61   c-0.461,2.781-0.723,5.673-0.778,8.595c-0.056,2.925,0.107,5.836,0.485,8.654c1.025,7.641,3.761,20.187,10.974,36.566   l22.626,51.397h-9.423l-55.898-124.69l-21.848-51.785c-1.599-3.791-4.133-7.074-7.188-9.828c-5.29-4.77-8.32-11.574-8.32-18.703   v-11.806c0-3.59-2.91-6.5-6.5-6.5s-6.5,2.91-6.5,6.5v10.935c0,11.146,4.418,22.027,12.789,29.385   c1.667,1.467,3.005,3.324,3.868,5.369l11.121,26.36c-32.096-19.458-51.762-54.095-51.762-91.997v-45.336   c0.588,0.012,1.168,0.035,1.764,0.035c0.139,0,0.281,0,0.42-0.001c2.867-0.021,5.702-0.177,8.425-0.464   c9.309-0.979,17.999-5.05,24.734-11.439c2.964-2.813,2.699-7.607-0.604-10.012l-0.005-0.003c-2.571-1.872-6.072-1.557-8.385,0.628   c-4.667,4.412-10.674,7.222-17.102,7.897c-2.305,0.243-4.713,0.375-7.143,0.393c-16.69,0.095-29.545-5.534-37.432-10.258   l-1.542-0.924H54.317c-7.625,0-13.849-6.113-14.028-13.696c-0.024-1.037,0.161-2.086,0.659-2.996   c0.703-1.284,1.815-2.227,3.159-2.69l58.458-22.793c7.017-2.736,14.396-4.124,21.931-4.124c0.4,0,0.801,0.007,1.163,0.022   c3.624,0.167,7.097,1.115,10.323,2.819l0.414,0.219l4.583,1.632l0.596,0.094c3.661,0.58,7.6,1.854,11.389,3.682   c6.84,3.303,11.088,10.693,13.345,15.891c-5.483,1.458-13.937,2.727-20.744-0.561c-3.733-1.802-7.071-4.005-9.758-6.415   c-2.289-2.053-5.744-2.112-8.188-0.245c-3.205,2.449-3.472,7.245-0.465,9.934c3.61,3.229,7.969,6.122,12.759,8.434   c5.047,2.438,10.411,3.31,15.457,3.342l9.134,28.573l8.83,23.377c6.448,17.042,23.022,28.492,41.241,28.492h61.001   c3.59,0,6.5-2.91,6.5-6.5s-2.91-6.5-6.5-6.5h-61.001c-12.848,0-24.535-8.075-29.082-20.091l-8.658-22.897l-8.337-26.079   c5.049-1.234,8.478-2.742,8.816-2.894l4.984-2.237l-1.347-5.295c-0.229-0.896-5.773-22.035-22.335-30.034   c-0.581-0.28-1.166-0.551-1.755-0.811c3.116-4.878,7.065-8.824,11.61-11.5c6.93-4.081,14.814-4.988,22.201-2.553   c7.382,2.433,13.374,7.594,16.874,14.534c2.932,5.813,4.008,12.589,1.532,21.109c-0.896,3.086,0.422,6.385,3.252,7.91   c3.752,2.021,8.417,0.096,9.66-3.98c0.281-0.924,0.471-1.545,0.471-1.545c9.513-28.868-6.234-60.094-35.103-69.606   c-28.87-9.515-60.094,6.234-69.605,35.1c-0.214,0.646-0.403,1.301-0.592,1.956c-6.609,0.66-13.083,2.206-19.319,4.638   l-58.111,22.663c-3.628,1.283-6.729,3.618-8.964,6.745c-2.278,3.169-3.482,6.919-3.482,10.846   C27.285,145.857,38.195,157.487,52.036,158.65z M380.831,228.841c-0.047-0.057-0.098-0.109-0.146-0.166   c13.522,9.673,22.36,25.494,22.36,43.349c0,20.406,16.603,37.009,37.009,37.009h30.594c-2.717,8.021-10.317,13.812-19.244,13.812   h-18.79c-20.472,0-37.126-16.655-37.126-37.127v-14.243C395.961,256.052,390.849,240.926,380.831,228.841z M338.383,335.828   c0.213,0.413,0.428,0.821,0.659,1.227c0.202,0.37,0.416,0.747,0.638,1.109c0.635,1.108,1.338,2.216,2.065,3.256   c0.243,0.354,0.489,0.706,0.691,0.977c0.908,1.249,1.863,2.429,2.84,3.506l0.095,0.103c0.275,0.296,0.551,0.592,0.838,0.89   c0.309,0.319,0.616,0.627,0.935,0.935c0.071,0.07,0.143,0.137,0.215,0.201c0.285,0.273,0.578,0.539,0.885,0.814   c0.152,0.144,0.31,0.279,0.473,0.409c0.254,0.221,0.509,0.435,0.771,0.648c0.465,0.38,0.954,0.748,1.44,1.101   c0.2,0.146,0.404,0.289,0.594,0.447l0.663,0.535c0.164,0.128,0.327,0.27,0.49,0.416l0.091,0.08c0.134,0.115,0.262,0.23,0.434,0.394   c0.196,0.183,0.394,0.372,0.576,0.562l0.088,0.09c0.224,0.224,0.442,0.447,0.673,0.702l0.27,0.295   c0.212,0.235,0.416,0.48,0.559,0.65c0.831,1.021,1.599,2.138,2.29,3.331c0.195,0.335,0.382,0.679,0.53,0.96   c0.167,0.327,0.326,0.662,0.52,1.077c0.153,0.32,0.298,0.656,0.436,0.992h0.001l0.146,0.365c0.149,0.393,0.3,0.802,0.434,1.21   l0.101,0.286c0.041,0.113,0.073,0.232,0.107,0.349l0.043,0.143c0.05,0.161,0.101,0.321,0.145,0.489l0.066,0.237   c0.083,0.276,0.149,0.562,0.231,0.896c0.062,0.248,0.118,0.501,0.169,0.756l0.075,0.407l-24.889,85.325h-4.812l18.871-70.191   v-0.858c0-12.354-5.81-23.838-15.94-31.512c-5.246-3.973-7.575-6.346-9.006-9.522C329.386,338.762,333.882,337.4,338.383,335.828z    M239.547,304.011c8.921,3.504,22.384,7.022,42.528,7.022c15.418,0,35.078-5.112,46.985-9.269c0.031,0.299,0.064,0.599,0.098,0.898   c0.054,0.475,0.113,0.959,0.174,1.455l0.153,1.182c0.052,0.385,0.104,0.775,0.162,1.154l0.053,0.367   c0.041,0.287,0.082,0.575,0.131,0.867c0.446,2.939,0.995,5.844,1.637,8.662c0.133,0.569,0.265,1.128,0.408,1.715   c0.272,1.105,0.563,2.209,0.877,3.318c0.139,0.489,0.287,0.979,0.431,1.45c0.095,0.316,0.193,0.628,0.291,0.94   c-15.554,5.359-31.021,7.979-47.095,7.979c-17.89,0-33.645-1.612-48.01-4.91C240.309,318.486,240.354,310.687,239.547,304.011z    M160.378,322.18l7.823,4.085l4.608,10.278l-8.17,115.458h-10.266l5.178-93.342l-19.307-49.689   C146.425,313.965,153.149,318.405,160.378,322.18z M68.152,158.753c1.586,0.903,3.331,1.821,5.207,2.724v14.951   c-4.312-5.259-7.124-11.333-8.176-17.675H68.152z M151.14,64.517c10.048-5.066,21.465-5.918,32.151-2.396   c5.271,1.737,9.962,4.43,13.962,7.811c-0.825-0.33-1.66-0.645-2.512-0.926c-10.993-3.624-22.663-2.309-32.865,3.697   c-7.26,4.275-13.355,10.764-17.773,18.756l-2.482-0.884c-3.436-1.76-7.057-2.953-10.821-3.588   C134.555,77.201,141.715,69.27,151.14,64.517z"
-                />
-              </g>
-            </svg>
+          <div class="p-4 bg-blue-50 text-blue-500 rounded-2xl">
+            <Users :size="24" />
           </div>
         </div>
 
-        <div
-          class="bg-white p-6 rounded-3xl shadow-sm border-l-4 border-red-500 flex items-center justify-between"
-        >
+        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 flex items-center justify-between group hover:border-red-200 transition-colors">
           <div>
-            <p class="text-sm font-bold text-gray-400 uppercase">
-              Pertes totales
-            </p>
-            <p class="text-3xl font-black text-red-600">
-              {{ campaign.losses }}
-            </p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pertes Totales</p>
+            <p class="text-3xl font-black text-red-600 group-hover:text-red-700 transition-colors">{{ campaign.losses }}</p>
           </div>
-          <div class="p-3 bg-red-50 rounded-2xl text-red-500 text-2xl">
-            <svg
-              fill="#000000"
-              width="30px"
-              height="30px"
-              viewBox="0 0 30 30"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M13.5 27c-.276.004-.504.224-.5.5v.5c0 1.1.9 2 2 2s2-.9 2-2v-.5c0-.333-.25-.5-.5-.5s-.5.162-.5.5v.5c0 .563-.437 1-1 1s-1-.437-1-1v-.5c.004-.282-.218-.504-.5-.5zM15 0c-1.65 0-3 1.35-3 3v.5c0 .65 1 .66 1 0V3c0-1.11.89-2 2-2 1.11 0 2 .89 2 2v.5c0 .654 1 .66 1 0V3c0-1.65-1.35-3-3-3zm7.5 3C25.534 3 28 5.468 28 8.5c0 .665-1 .665-1 0C27 6.01 24.994 4 22.5 4c-.667 0-.663-1 0-1zm-15 0C4.468 3 2 5.468 2 8.5c0 .665 1 .665 1 0C3 6.01 5.01 4 7.5 4c.668 0 .665-1 0-1zM15 5c-4.32 0-6.688 1.81-7.838 4.102C6.012 11.394 6 14.096 6 16c0 2 0 5.817-2.88 9.174A.5.5 0 0 0 3.5 26h23a.5.5 0 0 0 .38-.826C24 21.817 24 18 24 16c0-1.904-.013-4.606-1.162-6.898C21.688 6.81 19.32 5 15 5zm0 1c4.054 0 5.937 1.543 6.943 3.55C22.95 11.56 23 14.108 23 16c0 1.852.107 5.567 2.586 9H4.414C6.894 21.567 7 17.852 7 16c0-1.893.05-4.44 1.057-6.45C9.063 7.544 10.947 6 15 6z"
-              />
-            </svg>
+          <div class="p-4 bg-red-50 text-red-500 rounded-2xl">
+            <TrendingDown :size="24" />
           </div>
         </div>
 
-        <div
-          class="bg-white p-6 rounded-3xl shadow-sm border-l-4 border-green-500 flex items-center justify-between"
-        >
+        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 flex items-center justify-between group hover:border-green-200 transition-colors">
           <div>
-            <p class="text-sm font-bold text-gray-400 uppercase">
-              Animaux Vendus
-            </p>
-            <p class="text-3xl font-black text-green-600">
-              {{ campaign.sold }}
-            </p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Animaux Vendus</p>
+            <p class="text-3xl font-black text-green-600 group-hover:text-green-700 transition-colors">{{ campaign.sold }}</p>
           </div>
-          <div class="p-3 bg-green-50 rounded-2xl text-green-500 text-2xl">
-            <svg
-              width="30px"
-              height="30px"
-              viewBox="0 0 1024 1024"
-              class="icon"
-              version="1.1"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M927.692322 664.047995c0-73.211896-31.369799-139.077415-81.152127-185.411298V413.724415l47.798039 40.252004a20.215592 20.215592 0 0 0 13.056586 4.765162 20.272929 20.272929 0 0 0 15.533364-7.221463c7.212248-8.568896 6.112595-21.367463-2.456301-28.588926l-359.19945-302.486442c-22.843905-19.24802-55.901067-19.168157-78.626201 0.178156L339.342218 242.421233v-75.428608c0-33.561937-27.301902-60.863839-60.86384-60.863839s-60.863839 27.301902-60.863839 60.863839v178.894268l-114.575839 97.400163c-8.539204 7.251156-9.579471 20.059961-2.318077 28.588926 4.011583 4.725231 9.717696 7.151839 15.46374 7.151839 4.646392 0 9.312237-1.584974 13.12621-4.833763l47.728415-40.573504v388.16107c0 33.561937 27.301902 60.863839 60.863839 60.86384h308.258083c37.611404 22.099541 81.244277 35.00152 127.932424 35.00152 51.93044 0 100.231206-15.743261 140.479114-42.631514 5.333419-2.907834 10.294143-6.384949 14.513574-10.690386 59.85736-46.429104 98.6063-118.831107 98.6063-200.277089zM217.614539 821.782648V399.127906l33.423713-28.413842c0.21092-0.178156 0.28976-0.438223 0.491465-0.62457 1.08839-0.999312 1.861424-2.223879 2.710224-3.438207 0.680884-0.976787 1.477467-1.856304 1.966884-2.917049 0.506823-1.08839 0.666549-2.294527 0.974739-3.478139 0.361432-1.402723 0.790439-2.750156 0.846753-4.193834 0.011263-0.281568 0.161774-0.518086 0.161774-0.800678V166.993649c0-11.183899 9.103364-20.288288 20.288287-20.288288 11.183899 0 20.288288 9.103364 20.288288 20.288288v119.290831c0 0.989073 0.425936 1.837874 0.563137 2.789064 0.196586 1.412962 0.337882 2.787016 0.837538 4.146735 0.508871 1.384293 1.303406 2.546403 2.087702 3.768922 0.502728 0.793511 0.719791 1.695554 1.34641 2.430704 0.17918 0.21092 0.438223 0.290783 0.62457 0.492489 0.998288 1.086342 2.218759 1.856304 3.431039 2.704081 0.98293 0.684979 1.868591 1.485658 2.937527 1.97917 1.065865 0.49556 2.246404 0.649143 3.402371 0.954261 1.431392 0.374742 2.808517 0.809893 4.282913 0.865184 0.272353 0.011263 0.50068 0.155631 0.775081 0.15563 0.959381 0 1.78156-0.417745 2.706129-0.545731 1.449822-0.195562 2.859712-0.345049 4.253219-0.85904 1.364839-0.503752 2.508519-1.291119 3.717728-2.063129 0.802726-0.508871 1.715008-0.731054 2.459373-1.365863l176.736941-150.208072c7.56856-6.449454 18.593757-6.458669 26.202249-0.049147l271.135073 228.326428c-0.037884 0.51399-0.297951 0.952213-0.29795 1.476442v66.563809c-38.481706-23.561649-83.53778-37.397411-131.871311-37.397411-139.836114 0-253.598989 113.762875-253.598989 253.600013 0 69.328299 28.01555 132.196906 73.2549 178.021917H237.901803c-11.183899 0-20.287264-9.104388-20.287264-20.288288z m243.455357-157.734653c0-117.458077 95.565361-213.023437 213.023438-213.023438s213.023437 95.565361 213.023437 213.023438-95.565361 213.023437-213.023437 213.023437-213.023437-95.565361-213.023438-213.023437z"
-                fill="#22C67F"
-              />
-              <path
-                d="M278.478378 471.309773h142.015967v142.015967H278.478378zM757.781624 639.243349H694.381621v-12.507783l76.763755-67.167902c8.430672-7.380165 9.282544-20.188971 1.902379-28.628857-7.399619-8.430672-20.188971-9.291759-28.628858-1.902379l-70.32454 61.53346-70.324539-61.53346c-8.439887-7.369927-21.258931-6.508839-28.628858 1.902379-7.380165 8.439887-6.528293 21.248692 1.902379 28.628857l76.763755 67.167902v12.507783h-58.327676c-11.204377 0-20.288288 9.083911-20.288287 20.288287s9.083911 20.288288 20.288287 20.288288h58.327676v20.288288h-38.040412c-11.204377 0-20.288288 9.083911-20.288288 20.288288s9.083911 20.288288 20.288288 20.288287h38.040412v43.111716c0 11.204377 9.083911 20.288288 20.288287 20.288288 11.204377 0 20.288288-9.083911 20.288288-20.288288v-43.111716h43.111716c11.204377 0 20.288288-9.083911 20.288287-20.288287s-9.083911-20.288288-20.288287-20.288288H694.381621v-20.288288h63.400003c11.204377 0 20.288288-9.083911 20.288288-20.288288s-9.084934-20.288288-20.288288-20.288287z"
-                fill="#74E8AE"
-              />
-            </svg>
+          <div class="p-4 bg-green-50 text-green-500 rounded-2xl">
+            <BadgeDollarSign :size="24" />
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div
-          class="lg:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
-        >
-          <h3
-            class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 text-blue-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Info Panel -->
+        <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 h-fit">
+          <h3 class="font-black text-slate-800 mb-6 flex items-center gap-3">
+            <Info :size="20" class="text-slate-400" />
             Informations
           </h3>
-          <div class="space-y-3">
-            <div class="flex justify-between py-2 border-b border-gray-50">
-              <span class="text-gray-500 text-sm">Département</span>
-              <span class="font-bold text-gray-700">{{
-                campaign.department?.name || "N/A"
-              }}</span>
+          <div class="space-y-4">
+            <div class="flex justify-between py-3 border-b border-slate-50">
+              <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Département</span>
+              <span class="font-black text-slate-700 text-sm">{{ campaign.department?.name || "N/A" }}</span>
             </div>
-            <div class="flex justify-between py-2 border-b border-gray-50">
-              <span class="text-gray-500 text-sm">Objectif</span>
-              <span class="font-bold text-gray-700">{{
-                campaign.objective || "Non défini"
-              }}</span>
+            <div class="flex justify-between py-3 border-b border-slate-50">
+              <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Objectif</span>
+              <span class="font-black text-slate-700 text-sm">{{ campaign.objective || "Non défini" }}</span>
             </div>
-            <div class="flex justify-between py-2">
-              <span class="text-gray-500 text-sm">Statut actuel</span>
+            <div class="flex justify-between py-3">
+              <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Statut</span>
               <span
-                class="px-2 py-0.5 rounded-lg text-xs font-bold uppercase"
-                :class="
-                  campaign.status === 'active'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-600'
-                "
+                class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                :class="{
+                  'bg-amber-100 text-amber-700': campaign.status === 'preparation',
+                  'bg-green-100 text-green-700': campaign.status === 'active',
+                  'bg-slate-100 text-slate-500': campaign.status === 'completed',
+                }"
               >
                 {{ campaign.status }}
               </span>
@@ -233,166 +217,240 @@ const handleStatusChange = async (status) => {
             class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
           >
             <h3 class="font-bold text-gray-800 mb-4">Signaler des Pertes</h3>
+
             <div class="flex gap-2">
               <input
                 v-model="lossInput"
                 type="number"
-                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all"
-                placeholder="Ex: 2"
+                class="flex-1 bg-slate-50 border-slate-200 border rounded-2xl px-4 py-4 font-black text-slate-700 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 focus:outline-none transition-all"
+                placeholder="0"
               />
+
               <button
                 @click="handleAddLoss"
-                class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
+                class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-8 rounded-2xl transition-all active:scale-95 shadow-lg shadow-slate-900/10"
               >
-                Valider
+                OK
               </button>
             </div>
           </div>
 
           <div
             class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"
+            :class="{
+              'opacity-50 grayscale-[0.5]': campaign.status !== 'active',
+            }"
           >
-            <h3 class="font-bold text-gray-800 mb-4">Enregistrer des Ventes</h3>
+            <h3 class="font-bold text-gray-800 mb-4 flex justify-between">
+              Enregistrer des Ventes
+              <span
+                v-if="campaign.status !== 'active'"
+                class="text-[10px] text-red-500 uppercase italic"
+                >Verrouillé</span
+              >
+            </h3>
             <div class="flex gap-2">
               <input
                 v-model="saleInput"
                 type="number"
-                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all"
+                :disabled="campaign.status !== 'active'"
+                class="flex-1 border-gray-200 border rounded-xl p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all disabled:bg-gray-100"
                 placeholder="Ex: 5"
               />
               <button
                 @click="handleAddSale"
+                :disabled="campaign.status !== 'active'"
                 class="'h-full bg-[#1e293b] hover:'h-full [#1e293b] text-white font-bold px-6 rounded-xl transition-colors"
               >
-                Valider
+                OK
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-        <h3 class="font-bold text-gray-800 mb-5 flex items-center gap-2">
-          <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+      <!-- Lifecycle Management -->
+      <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+        <h3 class="font-black text-slate-800 mb-8 flex items-center gap-3">
+          <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
           Cycle de vie de la campagne
         </h3>
 
-        <div class="flex flex-wrap gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             @click="handleStatusChange('preparation')"
-            class="flex-1 min-w-[150px] group flex flex-col items-center gap-3 px-4 py-5 rounded-2xl font-bold transition-all duration-200 border active:scale-95"
+            class="group flex flex-col items-center gap-4 p-6 rounded-3xl font-black transition-all duration-300 border-2"
             :class="
               campaign.status === 'preparation'
-                ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm'
-                : 'bg-gray-50/50 border-transparent text-gray-400 hover:bg-white hover:border-yellow-200 hover:text-yellow-600'
+                ? 'bg-amber-50 border-amber-200 text-amber-700 shadow-md'
+                : 'bg-slate-50/50 border-transparent text-slate-400 hover:bg-white hover:border-amber-100 hover:text-amber-600'
             "
           >
             <div
-              class="p-2 rounded-xl transition-colors"
+              class="p-4 rounded-2xl transition-all duration-300 shadow-sm"
               :class="
                 campaign.status === 'preparation'
-                  ? 'bg-white'
-                  : 'bg-gray-100 group-hover:bg-yellow-50'
+                  ? 'bg-white text-amber-500 scale-110'
+                  : 'bg-white group-hover:bg-amber-50'
               "
             >
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <Calendar :size="28" />
             </div>
-            <span class="text-sm">Préparation</span>
+            <span class="text-sm uppercase tracking-widest">Préparation</span>
           </button>
 
           <button
             @click="handleStatusChange('active')"
-            class="flex-1 min-w-[150px] group flex flex-col items-center gap-3 px-4 py-5 rounded-2xl font-bold transition-all duration-200 border active:scale-95"
+            class="group flex flex-col items-center gap-4 p-6 rounded-3xl font-black transition-all duration-300 border-2"
             :class="
               campaign.status === 'active'
-                ? 'bg-green-50 border-green-200 text-green-700 shadow-sm'
-                : 'bg-gray-50/50 border-transparent text-gray-400 hover:bg-white hover:border-green-200 hover:text-green-600'
+                ? 'bg-green-50 border-green-200 text-green-700 shadow-md'
+                : 'bg-slate-50/50 border-transparent text-slate-400 hover:bg-white hover:border-green-100 hover:text-green-600'
             "
           >
             <div
-              class="p-2 rounded-xl transition-colors"
+              class="p-4 rounded-2xl transition-all duration-300 shadow-sm"
               :class="
                 campaign.status === 'active'
-                  ? 'bg-white'
-                  : 'bg-gray-100 group-hover:bg-green-50'
+                  ? 'bg-white text-green-500 scale-110'
+                  : 'bg-white group-hover:bg-green-50'
               "
             >
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
+              <TrendingUp :size="28" />
             </div>
-            <span class="text-sm">En cours</span>
+            <span class="text-sm uppercase tracking-widest">En cours</span>
           </button>
 
           <button
             @click="handleStatusChange('completed')"
-            class="flex-1 min-w-[150px] group flex flex-col items-center gap-3 px-4 py-5 rounded-2xl font-bold transition-all duration-200 border active:scale-95"
+            class="group flex flex-col items-center gap-4 p-6 rounded-3xl font-black transition-all duration-300 border-2"
             :class="
               campaign.status === 'completed'
-                ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
-                : 'bg-gray-50/50 border-transparent text-gray-400 hover:bg-white hover:border-blue-200 hover:text-blue-600'
+                ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-md'
+                : 'bg-slate-50/50 border-transparent text-slate-400 hover:bg-white hover:border-blue-100 hover:text-blue-600'
             "
           >
             <div
-              class="p-2 rounded-xl transition-colors"
+              class="p-4 rounded-2xl transition-all duration-300 shadow-sm"
               :class="
                 campaign.status === 'completed'
-                  ? 'bg-white'
-                  : 'bg-gray-100 group-hover:bg-blue-50'
+                  ? 'bg-white text-blue-500 scale-110'
+                  : 'bg-white group-hover:bg-blue-50'
               "
             >
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+              <CheckCircle2 :size="28" />
             </div>
-            <span class="text-sm">Terminé</span>
+            <span class="text-sm uppercase tracking-widest">Terminé</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Section Finance -->
+      <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+          <h3 class="font-black text-slate-800 text-xl flex items-center gap-3">
+            <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+            Finances de la Campagne
+          </h3>
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 md:flex-none px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 min-w-[140px]">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Rentabilité (ROI)</span>
+              <span :class="['text-base font-black', campaignStats.balance >= 0 ? 'text-green-600' : 'text-red-600']">
+                {{ formatCurrency(campaignStats.balance) }}
+              </span>
+            </div>
+            <button 
+              @click="router.push('/finance')"
+              class="flex-1 md:flex-none bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
+            >
+              <Plus :size="16" />
+              Ajouter
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div class="bg-green-50/50 p-6 rounded-3xl border border-green-100 flex items-center gap-5">
+            <div class="p-4 bg-white text-green-600 rounded-2xl shadow-sm"><TrendingUp :size="24" /></div>
+            <div>
+              <p class="text-[10px] font-black text-green-700/50 uppercase tracking-widest">Recettes</p>
+              <p class="text-xl font-black text-green-700">{{ formatCurrency(campaignStats.recettes) }}</p>
+            </div>
+          </div>
+          <div class="bg-red-50/50 p-6 rounded-3xl border border-red-100 flex items-center gap-5">
+            <div class="p-4 bg-white text-red-600 rounded-2xl shadow-sm"><TrendingDown :size="24" /></div>
+            <div>
+              <p class="text-[10px] font-black text-red-700/50 uppercase tracking-widest">Dépenses</p>
+              <p class="text-xl font-black text-red-700">{{ formatCurrency(campaignStats.dépenses) }}</p>
+            </div>
+          </div>
+          <div class="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 flex items-center gap-5">
+            <div class="p-4 bg-white text-blue-600 rounded-2xl shadow-sm"><PieChart :size="24" /></div>
+            <div>
+              <p class="text-[10px] font-black text-blue-700/50 uppercase tracking-widest">Opérations</p>
+              <p class="text-xl font-black text-blue-700">{{ campaignTransactions.length }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table View (Desktop) -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-50">
+                <th class="pb-5 px-4">Date</th>
+                <th class="pb-5 px-4">Catégorie</th>
+                <th class="pb-5 px-4">Description</th>
+                <th class="pb-5 px-4 text-right">Montant</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50 font-medium">
+              <tr v-for="t in campaignTransactions" :key="t._id" class="text-sm hover:bg-slate-50 transition-colors">
+                <td class="py-5 px-4 text-slate-500 font-bold">{{ new Date(t.date).toLocaleDateString('fr-FR') }}</td>
+                <td class="py-5 px-4">
+                  <span class="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider">
+                    {{ t.category }}
+                  </span>
+                </td>
+                <td class="py-5 px-4 text-slate-700 font-black">{{ t.description || '-' }}</td>
+                <td class="py-5 px-4 text-right font-black" :class="t.type === 'recette' ? 'text-green-600' : 'text-red-600'">
+                  {{ t.type === 'recette' ? '+' : '-' }} {{ formatCurrency(t.amount) }}
+                </td>
+              </tr>
+              <tr v-if="campaignTransactions.length === 0">
+                <td colspan="4" class="py-16 text-center text-slate-300 italic text-sm font-bold uppercase tracking-widest">
+                  Aucun mouvement financier enregistré
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Transactions List -->
+        <div class="md:hidden space-y-4">
+          <div v-for="t in campaignTransactions" :key="t._id" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ new Date(t.date).toLocaleDateString('fr-FR') }}</p>
+              <p class="font-black text-slate-800 text-sm">{{ t.description || t.category }}</p>
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider">{{ t.category }}</span>
+            </div>
+            <div class="text-right">
+              <p :class="['font-black text-sm', t.type === 'recette' ? 'text-green-600' : 'text-red-600']">
+                {{ t.type === 'recette' ? '+' : '-' }} {{ formatCurrency(t.amount) }}
+              </p>
+            </div>
+          </div>
+          <div v-if="campaignTransactions.length === 0" class="py-12 text-center text-slate-300 text-xs font-black uppercase tracking-widest">
+            Aucun mouvement
+          </div>
         </div>
       </div>
     </div>
 
-    <div
-      v-else
-      class="flex flex-col items-center justify-center py-24 space-y-4"
-    >
-      <div
-        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
-      ></div>
-      <p class="text-gray-400 font-medium tracking-widest uppercase text-xs">
-        Synchronisation des données...
-      </p>
+    <!-- Loading Spinner -->
+    <div v-else class="flex flex-col items-center justify-center py-32 space-y-6">
+      <div class="animate-spin rounded-full h-16 w-12 border-4 border-slate-200 border-b-orange-500"></div>
+      <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">Chargement des données...</p>
     </div>
   </div>
 </template>

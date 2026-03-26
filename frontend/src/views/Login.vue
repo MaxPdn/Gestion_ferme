@@ -28,8 +28,8 @@ const login = async () => {
 </script>
 
 <template>
-<div class="flex items-center justify-center h-screen bg-slate-50">
-  <div class="bg-white p-10 rounded-2xl shadow-xl w-96 border border-slate-100">
+<div class="flex items-center justify-center min-h-screen bg-slate-50 p-4">
+  <div class="bg-white p-6 md:p-10 rounded-3xl shadow-xl w-full max-w-[420px] border border-slate-100">
     <div class="text-center mb-8">
       <div class="inline-flex bg-orange-500/10 p-4 rounded-2xl mb-4">
         <h2 class="text-4xl font-black text-orange-500 tracking-tighter">TC</h2>
@@ -42,14 +42,14 @@ const login = async () => {
       <div>
         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Email</label>
         <input v-model="email" type="email" placeholder="votre@email.com"
-          class="w-full border border-slate-200 p-3.5 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all bg-slate-50/50"/>
+          class="w-full border border-slate-200 p-4 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all bg-slate-50/50"/>
       </div>
 
       <div>
         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Mot de passe</label>
         <input type="password" v-model="password"
           placeholder="••••••••"
-          class="w-full border border-slate-200 p-3.5 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all bg-slate-50/50"/>
+          class="w-full border border-slate-200 p-4 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all bg-slate-50/50"/>
       </div>
 
       <button @click="login"
@@ -57,7 +57,7 @@ const login = async () => {
         SE CONNECTER
       </button>
 
-      <div class="pt-4 text-center">
+      <div class="pt-6 text-center">
         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2026 TerraCore • Système Sécurisé</p>
       </div>
     </div>

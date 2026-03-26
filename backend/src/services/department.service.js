@@ -1,4 +1,4 @@
-import Department from "../models/department.model.js";
+import Department from "../models/Department.model.js";
 
 // ➕ créer
 export const createDepartment = async (data) => {
