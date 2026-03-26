@@ -170,7 +170,7 @@ const getCategoryClass = (cat) => {
           <div class="p-4 bg-blue-50 text-blue-600 rounded-2xl"><Package :size="28" /></div>
           <div>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Valeur Stock</p>
-            <p class="text-2xl font-black text-slate-800">{{ totalStockValue }} €</p>
+            <p class="text-2xl font-black text-slate-800">{{ totalStockValue }} FCFA</p>
           </div>
         </div>
         <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5">

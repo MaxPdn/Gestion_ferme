@@ -296,7 +296,7 @@ const formatCurrency = (amount) => {
                     ]">
                       {{ camp.status }}
                     </span>
-                    <router-link :to="'/campaign/' + camp._id" class="p-2 bg-slate-100 text-slate-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all">
+                    <router-link :to="'/home/campaign/' + camp._id" class="p-2 bg-slate-100 text-slate-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </router-link>
                   </div>

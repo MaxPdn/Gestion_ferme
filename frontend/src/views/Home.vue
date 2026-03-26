@@ -126,7 +126,7 @@ const chartOptions = ref({
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
       <div>
         <h2 class="dashboard-subtitle uppercase tracking-widest">Tableau de Bord</h2>
-        <h1 class="dashboard-title">Bonjour, Admin 👋</h1>
+        <h1 class="dashboard-title">Bonjour</h1>
         <p class="dashboard-card-text mt-1">{{ currentDate }} • <span class="text-orange-500">TerraCore</span></p>
       </div>
       
@@ -169,7 +169,7 @@ const chartOptions = ref({
         <h3 class="dashboard-card-title mb-6 md:mb-8">Urgences</h3>
         <div class="space-y-3 md:space-y-4">
           <div v-for="alert in topAlerts" :key="alert.id" 
-               @click="router.push(`/campaign/${alert.id}`)"
+               @click="router.push(`/home/campaign/${alert.id}`)"
                class="group flex items-center justify-between p-4 md:p-5 bg-slate-50 rounded-[1.5rem] md:rounded-[2rem] border border-transparent hover:border-red-100 hover:bg-red-50/50 transition-all cursor-pointer">
             <div class="flex items-center gap-3 md:gap-4">
               <div class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white rounded-xl md:rounded-2xl shadow-sm flex-shrink-0">
