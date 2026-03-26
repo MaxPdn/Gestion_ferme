@@ -5,7 +5,9 @@ import { notify } from "../composables/useNotify";
 import { useAutoRefresh } from "../composables/useAutoRefresh";
 
 const { triggerRefresh, onRefresh } = useAutoRefresh();
-import { Plus, Pencil, Trash2, X, AlertTriangle } from "lucide-vue-next";
+
+import { Plus, Pencil, Trash2, X, AlertTriangle, Search } from "lucide-vue-next"; 
+
 
 const users = ref([]);
 const loading = ref(true);
@@ -125,10 +127,8 @@ onRefresh(fetchUsers);
             <h1 class="heading-1 text-slate-800">Gestion Utilisateurs</h1>
             <p class="text-small text-slate-500 mt-2">Administrez les accès de la plateforme</p>
           </div>
-          <button 
-            @click="openModal()"
-            class="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold self-start"
-          >
+          <button @click="openModal()"
+            class="btn bg-orange-500 hover:bg-orange-600 text-white font-semibold self-start">
             <Plus :size="18" />
             Ajouter
           </button>
@@ -141,19 +141,13 @@ onRefresh(fetchUsers);
       <!-- Filtres -->
       <div class="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6">
         <div class="relative flex-1">
-          <input 
-            v-model="searchQuery"
-            type="text" 
-            placeholder="Rechercher..." 
-            class="w-full px-4 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
-          />
+          <input v-model="searchQuery" type="text" placeholder="Rechercher..."
+            class="w-full px-4 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm" />
         </div>
-        
+
         <div class="relative w-full sm:w-48">
-          <select 
-            v-model="roleFilter"
-            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none appearance-none cursor-pointer text-sm font-medium text-slate-700"
-          >
+          <select v-model="roleFilter"
+            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none appearance-none cursor-pointer text-sm font-medium text-slate-700">
             <option value="">Tous les rôles</option>
             <option value="Admin">Administrateurs</option>
             <option value="Gestionnaire">Gestionnaires</option>
@@ -185,31 +179,23 @@ onRefresh(fetchUsers);
               </td>
               <td class="px-6 py-4 text-slate-500 font-medium text-sm">{{ user.email }}</td>
               <td class="px-6 py-4">
-                <span 
-                  :class="[
-                    'px-3 py-1 rounded-lg text-xs font-bold',
-                    user.role === 'Admin' ? 'bg-orange-100 text-orange-700' : 
-                    user.role === 'Gestionnaire' ? 'bg-slate-200 text-slate-700' : 
-                    'bg-slate-100 text-slate-600'
-                  ]"
-                >
+                <span :class="[
+                  'px-3 py-1 rounded-lg text-xs font-bold',
+                  user.role === 'Admin' ? 'bg-orange-100 text-orange-700' :
+                    user.role === 'Gestionnaire' ? 'bg-slate-200 text-slate-700' :
+                      'bg-slate-100 text-slate-600'
+                ]">
                   {{ user.role }}
                 </span>
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2">
-                  <button 
-                    @click="openModal(user)"
-                    class="p-2 hover:bg-orange-100 text-orange-600 rounded-lg transition-colors"
-                    title="Éditer"
-                  >
+                  <button @click="openModal(user)"
+                    class="p-2 hover:bg-orange-100 text-orange-600 rounded-lg transition-colors" title="Éditer">
                     <Pencil :size="18" />
                   </button>
-                  <button 
-                    @click="confirmDelete(user)"
-                    class="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                    title="Supprimer"
-                  >
+                  <button @click="confirmDelete(user)"
+                    class="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors" title="Supprimer">
                     <Trash2 :size="18" />
                   </button>
                 </div>
@@ -227,29 +213,23 @@ onRefresh(fetchUsers);
               <h3 class="font-bold text-slate-800 truncate">{{ user.username }}</h3>
               <p class="text-small text-slate-500 truncate">{{ user.email }}</p>
             </div>
-            <span 
-              :class="[
-                'px-2 py-1 rounded text-xs font-bold flex-shrink-0',
-                user.role === 'Admin' ? 'bg-orange-100 text-orange-700' : 
-                user.role === 'Gestionnaire' ? 'bg-slate-200 text-slate-700' : 
-                'bg-slate-100 text-slate-600'
-              ]"
-            >
+            <span :class="[
+              'px-2 py-1 rounded text-xs font-bold flex-shrink-0',
+              user.role === 'Admin' ? 'bg-orange-100 text-orange-700' :
+                user.role === 'Gestionnaire' ? 'bg-slate-200 text-slate-700' :
+                  'bg-slate-100 text-slate-600'
+            ]">
               {{ user.role }}
             </span>
           </div>
           <div class="flex gap-2 pt-3 border-t border-slate-100">
-            <button 
-              @click="openModal(user)"
-              class="flex-1 py-2 px-3 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-700 font-medium text-sm transition-colors flex items-center justify-center gap-2"
-            >
+            <button @click="openModal(user)"
+              class="flex-1 py-2 px-3 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-700 font-medium text-sm transition-colors flex items-center justify-center gap-2">
               <Pencil :size="16" />
               Éditer
             </button>
-            <button 
-              @click="confirmDelete(user)"
-              class="flex-1 py-2 px-3 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 font-medium text-sm transition-colors flex items-center justify-center gap-2"
-            >
+            <button @click="confirmDelete(user)"
+              class="flex-1 py-2 px-3 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 font-medium text-sm transition-colors flex items-center justify-center gap-2">
               <Trash2 :size="16" />
               Supprimer
             </button>
@@ -266,63 +246,43 @@ onRefresh(fetchUsers);
     </main>
 
     <!-- Modal Create/Edit -->
-    <div v-if="showModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div v-if="showModal"
+      class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[95vh] overflow-y-auto">
         <div class="sticky top-0 p-4 md:p-6 border-b border-slate-200 bg-white flex items-center justify-between">
           <h2 class="heading-2 text-slate-800">
             {{ editingUser ? 'Modifier' : 'Créer' }} un compte
           </h2>
-          <button 
-            @click="showModal = false" 
-            class="text-slate-400 hover:text-slate-600 transition-colors p-1"
-          >
+          <button @click="showModal = false" class="text-slate-400 hover:text-slate-600 transition-colors p-1">
             <X :size="24" />
           </button>
         </div>
-        
+
         <form @submit.prevent="saveUser" class="p-4 md:p-6 space-y-4">
           <div>
             <label class="text-small text-slate-600 font-semibold block mb-2">Nom d'utilisateur</label>
-            <input 
-              v-model="form.username" 
-              type="text" 
-              placeholder="Jean Dupont"
-              required
-              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
-            />
+            <input v-model="form.username" type="text" placeholder="Jean Dupont" required
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm" />
           </div>
 
           <div>
             <label class="text-small text-slate-600 font-semibold block mb-2">Email</label>
-            <input 
-              v-model="form.email" 
-              type="email" 
-              placeholder="email@exemple.com"
-              required
-              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
-            />
+            <input v-model="form.email" type="email" placeholder="email@exemple.com" required
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm" />
           </div>
 
           <div>
             <label class="text-small text-slate-600 font-semibold block mb-2">
               Mot de passe {{ editingUser ? '(Optionnel)' : '' }}
             </label>
-            <input 
-              v-model="form.password" 
-              type="password" 
-              placeholder="••••••••"
-              :required="!editingUser"
-              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
-            />
+            <input v-model="form.password" type="password" placeholder="••••••••" :required="!editingUser"
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm" />
           </div>
 
           <div>
             <label class="text-small text-slate-600 font-semibold block mb-2">Rôle</label>
-            <select 
-              v-model="form.role"
-              required
-              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none text-sm font-medium text-slate-700"
-            >
+            <select v-model="form.role" required
+              class="w-full border border-slate-200 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none text-sm font-medium text-slate-700">
               <option value="Admin">Administrateur</option>
               <option value="Gestionnaire">Gestionnaire</option>
               <option value="Agent terrain">Agent terrain</option>
@@ -330,17 +290,11 @@ onRefresh(fetchUsers);
           </div>
 
           <div class="flex gap-2 pt-4 border-t border-slate-100">
-            <button 
-              type="submit"
-              class="flex-1 btn bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-            >
+            <button type="submit" class="flex-1 btn bg-orange-500 hover:bg-orange-600 text-white font-semibold">
               {{ editingUser ? 'Modifier' : 'Créer' }}
             </button>
-            <button 
-              type="button"
-              @click="showModal = false"
-              class="flex-1 btn bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold"
-            >
+            <button type="button" @click="showModal = false"
+              class="flex-1 btn bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold">
               Annuler
             </button>
           </div>
@@ -349,27 +303,23 @@ onRefresh(fetchUsers);
     </div>
 
     <!-- Modal Confirmation Suppression -->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div v-if="showDeleteConfirm"
+      class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
         <div class="p-6 border-b border-slate-200">
           <h2 class="heading-2 text-slate-800">Confirmer la suppression</h2>
           <p class="text-small text-slate-500 mt-2">
-            Êtes-vous certain de vouloir supprimer l'utilisateur 
+            Êtes-vous certain de vouloir supprimer l'utilisateur
             <span class="font-bold">{{ userToDelete?.username }}</span> ?
           </p>
         </div>
-        
+
         <div class="p-6 flex gap-3">
-          <button 
-            @click="deleteUser"
-            class="flex-1 btn bg-red-600 hover:bg-red-700 text-white font-semibold"
-          >
+          <button @click="deleteUser" class="flex-1 btn bg-red-600 hover:bg-red-700 text-white font-semibold">
             Supprimer
           </button>
-          <button 
-            @click="showDeleteConfirm = false"
-            class="flex-1 btn bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold"
-          >
+          <button @click="showDeleteConfirm = false"
+            class="flex-1 btn bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold">
             Annuler
           </button>
         </div>
