@@ -8,6 +8,9 @@ import {
 } from "../services/departmentService.js";
 import { getCampaigns } from "../services/campaignService.js";
 import Swal from "sweetalert2"; // Importation de SweetAlert2
+import { useAutoRefresh } from "../composables/useAutoRefresh.js";
+
+const { triggerRefresh, onRefresh } = useAutoRefresh();
 
 const departments = ref([]);
 const allCampaigns = ref([]);
@@ -51,10 +54,23 @@ const handleCreate = async () => {
     await createDepartment({ name: newDeptName.value.trim() });
     newDeptName.value = "";
     await fetchData();
+    triggerRefresh();
   } catch (err) {
     alert(err.response?.data?.message || "Erreur création");
   } finally {
     creating.value = false;
+  }
+};
+
+const saveEdit = async (id) => {
+  if (!editedName.value.trim()) return;
+  try {
+    await updateDepartment(id, { name: editedName.value.trim() });
+    cancelEdit();
+    await fetchData();
+    triggerRefresh();
+  } catch (err) {
+    alert(err.response?.data?.message || "Erreur mise à jour");
   }
 };
 
@@ -69,17 +85,6 @@ const startEdit = (dept) => {
 const cancelEdit = () => {
   editingId.value = null;
   editedName.value = "";
-};
-
-const saveEdit = async (id) => {
-  if (!editedName.value.trim()) return;
-  try {
-    await updateDepartment(id, { name: editedName.value.trim() });
-    cancelEdit();
-    await fetchData();
-  } catch (err) {
-    alert(err.response?.data?.message || "Erreur mise à jour");
-  }
 };
 
 // const handleDelete = async (id) => {
@@ -119,6 +124,7 @@ const handleDelete = async (id, name) => {
 
       // Mise à jour de l'état local
       departments.value = departments.value.filter((c) => c._id !== id);
+      triggerRefresh();
 
       // Notification de succès
       Swal.fire({
@@ -151,6 +157,7 @@ const filteredDepartments = computed(() => {
 });
 
 onMounted(fetchData);
+onRefresh(fetchData);
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("fr-FR", {

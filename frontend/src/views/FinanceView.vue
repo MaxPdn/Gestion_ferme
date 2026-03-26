@@ -11,6 +11,9 @@ import {
   X
 } from 'lucide-vue-next';
 import axios from 'axios';
+import { useAutoRefresh } from '../composables/useAutoRefresh';
+
+const { triggerRefresh, onRefresh } = useAutoRefresh();
 
 const financeStore = useFinanceStore();
 const showModal = ref(false);
@@ -42,6 +45,11 @@ onMounted(async () => {
   await fetchCampaigns();
 });
 
+onRefresh(async () => {
+  await financeStore.fetchAllTransactions();
+  await financeStore.fetchFinanceStats();
+});
+
 const filteredTransactions = computed(() => {
   let result = financeStore.transactions;
   if (filterType.value !== 'all') {
@@ -55,6 +63,7 @@ const submitTransaction = async () => {
   const success = await financeStore.addTransaction(newTransaction.value);
   if (success) {
     showModal.value = false;
+    triggerRefresh();
     newTransaction.value = {
       type: 'dépense',
       category: 'alimentation',

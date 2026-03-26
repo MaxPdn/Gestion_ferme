@@ -78,9 +78,20 @@ const submitLoss = async () => {
 
 onMounted(fetchDashboardData);
 
-const logout = () => {
+const showLogoutModal = ref(false);
+
+const requestLogout = () => {
+  showLogoutModal.value = true;
+};
+
+const cancelLogout = () => {
+  showLogoutModal.value = false;
+};
+
+const confirmLogout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  showLogoutModal.value = false;
   router.push("/");
 };
 
@@ -125,7 +136,7 @@ const chartOptions = ref({
           <span>Déclarer une perte</span>
         </button>
 
-        <button @click="logout" class="w-full sm:w-auto btn rounded-2xl shadow-sm active:scale-95">
+        <button @click="requestLogout" class="w-full sm:w-auto btn rounded-2xl shadow-sm active:scale-95">
           <span>Déconnexion</span>
         </button>
       </div>
@@ -207,6 +218,19 @@ const chartOptions = ref({
         </div>
       </div>
     </Transition>
+
+    <transition name="fade">
+      <div v-if="showLogoutModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="w-[90vw] max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
+          <h3 class="text-lg font-black text-slate-900 mb-2">Confirmation de déconnexion</h3>
+          <p class="text-sm text-slate-600 mb-5">Voulez-vous vraiment vous déconnecter ?</p>
+          <div class="flex justify-end gap-3">
+            <button @click="cancelLogout" class="btn bg-slate-200 text-slate-700 hover:bg-slate-300">Annuler</button>
+            <button @click="confirmLogout" class="btn bg-red-500 text-white hover:bg-red-600">Déconnexion</button>
+          </div>
+        </div>
+      </div>
+    </transition>
 
   </div>
 </template>

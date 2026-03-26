@@ -3,6 +3,9 @@ import { computed, onMounted, ref } from "vue";
 import { getAnimals, createAnimal, deleteAnimal } from "@/services/animalService";
 import { useRouter } from "vue-router";
 import AddAnimalModal from "@/components/animal-component/form/AddAnimalModal.vue";
+import { useAutoRefresh } from "../composables/useAutoRefresh";
+
+const { triggerRefresh, onRefresh } = useAutoRefresh();
 
 
 const router = useRouter()
@@ -13,9 +16,11 @@ const showModal = ref(false);
 
 const handleCreateAnimal = async (data) => {
   try {
-    const newAnimal = await createAnimal(data);
+    const response = await createAnimal(data);
+    const newAnimal = response.data || response;
 
     animals.value.unshift(newAnimal);
+    triggerRefresh();
 
     showModal.value = false;
 
@@ -38,6 +43,7 @@ const handleDelete = async (id) => {
 
   try {
     await deleteAnimal(id);
+    triggerRefresh();
   } catch (err) {
     console.error(err);
 
@@ -46,7 +52,8 @@ const handleDelete = async (id) => {
   }
 };
 
-onMounted(async () => {
+const refreshAnimals = async () => {
+  loading.value = true;
   try {
     animals.value = await getAnimals();
   } catch (err) {
@@ -55,7 +62,10 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+};
+
+onMounted(refreshAnimals);
+onRefresh(refreshAnimals);
 
 const currentPage = ref(1);
 const itemsPerPage = 4;

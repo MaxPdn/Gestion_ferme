@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import SidebarItem from "./SidebarItem.vue";
 import {
   LayoutDashboard,
@@ -28,34 +28,41 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
-
+const activeItem = ref("Dashboard");
 const router = useRouter();
+const route = useRoute();
 const isCollapsed = ref(false);
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 
 // 🔥 mapping label → route
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/home" },
-  { icon: Layers, label: "Departements", path: "/departements" },
-  { icon: Sprout, label: "Campagnes", path: "/campaigns" },
-  { icon: Utensils, label: "Alimentation", path: "/alimentation" },
-  { icon: User, label: "Suivi Individuel",path:"/animals" },
-  { icon: HeartPulse, label: "Santé", path: "/sante" },
+  { icon: Layers, label: "Departements", path: "/home/departements" },
+  { icon: Sprout, label: "Campagnes", path: "/home/campaigns" },
+  { icon: Utensils, label: "Alimentation", path: "/home/alimentation" },
+  { icon: User, label: "Suivi Individuel",path:"/home/animals" },
+  { icon: HeartPulse, label: "Santé", path: "/home/sante" },
   {
     icon: BadgeDollarSign,
     label: "Financier",
-    path: "/finance",
+    path: "/home/finance",
     roles: ["Admin", "Gestionnaire"],
   },
-  { icon: Package, label: "Stocks", path: "/stocks" },
-  { icon: Bell, label: "Alertes", path: "/alerts" },
+  { icon: Package, label: "Stocks", path: "/home/stocks" },
+  { icon: Bell, label: "Alertes", path: "/home/alerts" },
   { icon: Users, label: "Utilisateurs", path: "/home/users", role: "Admin" },
 ].filter((item) => {
   if (item.roles) return item.roles.includes(user.role);
   if (item.role) return item.role === user.role;
   return true;
 });
-const activeItem = ref("Dashboard");
+
+// Watch route changes to update active item
+watch(() => route.path, (newPath) => {
+  const item = menuItems.find(item => item.path === newPath);
+  if (item) activeItem.value = item.label;
+}, { immediate: true });
+
 
 
 const selectItem = (item) => {
@@ -71,9 +78,20 @@ const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value;
 };
 
-const logout = () => {
+const showLogoutModal = ref(false);
+
+const requestLogout = () => {
+  showLogoutModal.value = true;
+};
+
+const cancelLogout = () => {
+  showLogoutModal.value = false;
+};
+
+const confirmLogout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  showLogoutModal.value = false;
   router.push("/");
 };
 </script>
@@ -163,7 +181,7 @@ const logout = () => {
         />
 
         <button
-          @click="logout"
+          @click="requestLogout"
           class="w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all group"
         >
           <LogOut
@@ -189,5 +207,32 @@ const logout = () => {
         </button>
       </div>
     </div>
+
+    <transition name="fade">
+      <div
+        v-if="showLogoutModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      >
+        <div class="w-[90vw] max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
+          <h3 class="text-lg font-black text-slate-900 mb-2">Confirmation</h3>
+          <p class="text-sm text-slate-600 mb-5">Voulez-vous vraiment vous déconnecter ?</p>
+          <div class="flex justify-end gap-3">
+            <button
+              @click="cancelLogout"
+              class="btn bg-slate-200 text-slate-700 hover:bg-slate-300"
+            >
+              Annuler
+            </button>
+            <button
+              @click="confirmLogout"
+              class="btn bg-red-500 text-white hover:bg-red-600"
+            >
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
   </aside>
 </template>

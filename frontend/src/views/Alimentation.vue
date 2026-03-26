@@ -135,12 +135,11 @@ const getStatusClass = (status) => {
     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-6">
       <div class="flex flex-col md:flex-row justify-between gap-4">
         <div class="relative flex-1 max-w-md group">
-          <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" :size="20" />
           <input 
             v-model="searchQuery"
             type="text" 
             placeholder="Rechercher un aliment..." 
-            class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all"
           />
         </div>
         

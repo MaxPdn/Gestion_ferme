@@ -21,16 +21,14 @@
     <!-- Filters Section -->
     <div class="flex flex-col md:flex-row gap-4 mb-8">
       <div class="relative flex-1 group">
-        <Search :size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
         <input
           v-model="searchQuery"
           type="text"
           placeholder="Rechercher une campagne..."
-          class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 shadow-sm"
+          class="w-full px-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 shadow-sm"
         />
       </div>
       <div class="relative min-w-[200px]">
-        <Filter :size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         <select
           v-model="statusFilter"
           class="w-full pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 shadow-sm appearance-none cursor-pointer"
@@ -233,7 +231,10 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { getCampaigns, deleteCampaign } from "../services/campaignService";
 import Swal from 'sweetalert2';
-import { Plus, Search, Filter, ChevronDown, Trash2, ChevronRight, Sprout } from 'lucide-vue-next';
+import { useAutoRefresh } from "../composables/useAutoRefresh";
+
+const { triggerRefresh, onRefresh } = useAutoRefresh();
+import { Plus, Search, ChevronDown, Trash2, ChevronRight, Sprout } from 'lucide-vue-next';
 
 const campaigns = ref([]);
 const loading = ref(true);
@@ -271,6 +272,7 @@ const filteredCampaigns = computed(() => {
 onMounted(() => {
   fetchCampaigns();
 });
+onRefresh(fetchCampaigns);
 
 const goToDetail = (id) => router.push(`/campaign/${id}`);
 const goToCreate = () => router.push("/create");
@@ -307,6 +309,7 @@ const handleDelete = async (id, name) => {
     try {
       await deleteCampaign(id);
       campaigns.value = campaigns.value.filter(c => c._id !== id);
+      triggerRefresh();
       Swal.fire({
         title: 'Supprimé !',
         text: 'La campagne a été retirée avec succès.',
