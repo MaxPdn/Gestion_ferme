@@ -124,18 +124,42 @@ const getCategoryClass = (cat) => {
 
 <template>
   <div class="p-6 md:p-10 bg-[#F8FAFC] min-h-screen font-sans">
-    <div class="max-w-7xl mx-auto">
+    <!-- <div class="max-w-7xl mx-auto">
       
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-        <div>
-          <h1 class="text-3xl font-black text-slate-900 tracking-tight text-left">Alimentation & Stocks</h1>
-          <p class="text-slate-500 mt-1 italic text-left">Flux en temps réel de votre exploitation</p>
+      <div class="flex items-center gap-3">
+        <button 
+          @click="openAddModal()"
+          class="bg-[#1e293b] hover:bg-[#1e293b] text-white px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all font-semibold text-sm"
+        >
+          <Plus :size="18" />
+          Nouvel Aliment
+        </button>
+        <button 
+          @click="openDistributeModal()"
+          class="bg-[#1e293b] hover:bg-[#1e293b] text-white px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all font-semibold text-sm"
+        >
+          <HandHelping :size="18" />
+          Distribuer
+        </button>
+      </div>
+    </div> -->
+
+    <!-- Filtres et Actions -->
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-6">
+      <div class="flex flex-col md:flex-row justify-between gap-4">
+        <div class="relative flex-1 max-w-md group">
+          <input 
+            v-model="searchQuery"
+            type="text" 
+            placeholder="Rechercher un aliment..." 
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all"
+          />
         </div>
         <div class="flex gap-3 w-full md:w-auto">
           <button @click="showDistributeModal = true" class="flex-1 md:flex-none justify-center bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-2xl flex items-center gap-2 hover:bg-slate-50 transition-all font-bold shadow-sm">
             <HandHelping :size="20" /> Distribuer
           </button>
-          <button @click="openAddModal()" class="flex-1 md:flex-none justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all font-bold">
+          <button @click="openAddModal()" class="flex-1 md:flex-none justify-center bg-[#1e293b] hover:bg-[#1e293b] text-white px-6 py-3 rounded-2xl flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all font-bold">
             <Plus :size="20" /> Nouveau
           </button>
         </div>

@@ -22,34 +22,34 @@ const routes = [
     path: "/home",
     component: AppLayout,
     children: [
-      { path: "/campaigns", component: CampaignList },
-      { path: "/create", component: CampaignCreate },
-      { path: "/campaign/:id", component: CampaignDetail },
-      { path: "/departements", component: Departements },
-      { path: "/alerts", component: Alert },
-      { path: "/alimentation", component: Alimentation },
-      { path: "/stocks", component: Stock },
-      { path: "/sante", component: HealthView },
-      { path: "/finance", component: FinanceView },
+      { path: "campaigns", component: CampaignList },
+      { path: "create", component: CampaignCreate },
+      { path: "campaign/:id", component: CampaignDetail },
+      { path: "departements", component: Departements },
+      { path: "alerts", component: Alert },
+      { path: "alimentation", component: Alimentation },
+      { path: "stocks", component: Stock },
+      { path: "sante", component: HealthView },
+      { path: "finance", component: FinanceView },
       { path: "", component: Home },
       {
         path: "users",
         component: Users,
-        beforeEnter: (to, from, next) => {
+        beforeEnter: (to, from) => {
           const user = JSON.parse(localStorage.getItem("user") || "{}");
           if (user.role === "Admin") {
-            next();
+            return true;
           } else {
-            next("/home");
+            return "/home";
           }
         },
       },
       {
-        path: "/animals",
+        path: "animals",
         component: AnimalListView
       },
       {
-        path: '/animal/:id',
+        path: 'animal/:id',
         name: 'animal',
         component: AnimalView
       }
@@ -63,15 +63,13 @@ const router = createRouter({
 });
 
 // protection route globale
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const token = localStorage.getItem("token");
 
   if (to.path !== "/" && !token) {
-    next("/");
+    return "/";
   } else if (to.path === "/" && token) {
-    next("/home");
-  } else {
-    next();
+    return "/home";
   }
 });
 

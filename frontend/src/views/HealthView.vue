@@ -2,6 +2,9 @@
 import { ref, watch, computed } from 'vue';
 import { useHealthStore } from '../stores/healthStore';
 import axios from 'axios';
+import { useAutoRefresh } from '../composables/useAutoRefresh';
+
+const { triggerRefresh, onRefresh } = useAutoRefresh();
 import { 
   Plus, 
   Stethoscope, 
@@ -63,6 +66,12 @@ const resetSelection = () => {
   isCampaignFound.value = false;
   healthStore.records = [];
 };
+
+onRefresh(() => {
+  if (selectedCampaignId.value) {
+    healthStore.fetchHealthRecords(selectedCampaignId.value);
+  }
+});
 
 // On déclenche la recherche après un petit délai de frappe
 let searchTimeout;
@@ -138,6 +147,7 @@ const submitForm = async () => {
   const success = await healthStore.addHealthRecord(selectedCampaignId.value, newRecord.value);
   if (success) {
     showModal.value = false;
+    triggerRefresh();
     // Reset form
     newRecord.value = {
       type: 'observation',
@@ -156,6 +166,13 @@ const getIcon = (type) => {
   if (type === 'maladie') return Stethoscope;
   if (type === 'vaccination') return Syringe;
   return Eye;
+};
+
+const deleteRecord = async (recordId) => {
+  const success = await healthStore.deleteRecord(recordId);
+  if (success) {
+    triggerRefresh();
+  }
 };
 
 const getTypeColor = (type) => {
@@ -188,9 +205,8 @@ const getTypeColor = (type) => {
                 v-model="campaignSearchName"
                 type="text"
                 placeholder="Nom de la campagne..."
-                class="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+                class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
               />
-              <Search :size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <div v-if="searchLoading" class="absolute right-3 top-1/2 -translate-y-1/2">
                 <div class="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
@@ -316,7 +332,7 @@ const getTypeColor = (type) => {
                     </p>
                   </div>
                   <button 
-                    @click="healthStore.deleteRecord(record._id)"
+                    @click="deleteRecord(record._id)"
                     class="text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
                   >
                     <Trash2 :size="18" />

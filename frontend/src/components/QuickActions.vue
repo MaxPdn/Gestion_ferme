@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-2xl border border-slate-100 p-6 md:p-8 shadow-sm">
-    <h2 class="heading-2 text-slate-800 mb-6">Actions Rapides</h2>
+    <h2 class="dashboard-card-title mb-6">Actions Rapides</h2>
     
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
       <!-- Nouvelle campagne -->
@@ -12,7 +12,7 @@
         <div class="icon-box">
           <Plus :size="24" class="group-hover:scale-110 transition-transform" />
         </div>
-        <p class="text-xs md:text-sm font-semibold text-slate-700 text-center mt-3">
+        <p class="dashboard-card-text md:text-sm font-semibold text-slate-700 text-center mt-3">
           Nouvelle Campagne
         </p>
       </button>
@@ -150,11 +150,26 @@ defineEmits([
   padding: 1.25rem 0.75rem;
   border: 2px solid transparent;
   border-radius: 1.25rem;
-  background: #f8fafc;
+  background: var(--color-sidebar);
+  color: #fff;
   cursor: pointer;
   transition: all 0.3s ease;
   user-select: none;
   min-height: 140px;
+}
+
+.action-btn .text-slate-700,
+.action-btn .text-slate-800,
+.action-btn .text-slate-500 {
+  color: #fff !important;
+}
+
+.action-btn .icon-box {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.action-btn:hover {
+  background: #334155;
 }
 
 @media (min-width: 768px) {

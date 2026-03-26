@@ -24,18 +24,16 @@
     <div class="flex flex-col md:flex-row gap-4 mb-8">
       <!-- Barre de recherche -->
       <div class="relative flex-1 group">
-        <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" :size="20" />
         <input 
           v-model="searchQuery"
           type="text" 
           placeholder="Rechercher un produit..." 
-          class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm"
+          class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm"
         />
       </div>
 
       <!-- Filtre par catégorie -->
       <div class="relative w-full md:w-64 group">
-        <Filter class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" :size="18" />
         <select 
           v-model="categoryFilter"
           class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none appearance-none cursor-pointer shadow-sm font-medium text-slate-700"
@@ -49,7 +47,6 @@
 
       <!-- Filtre par statut -->
       <div class="relative w-full md:w-64 group">
-        <Filter class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" :size="18" />
         <select 
           v-model="statusFilter"
           class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none appearance-none cursor-pointer shadow-sm font-medium text-slate-700"
@@ -249,7 +246,10 @@
 import { ref, onMounted, computed } from 'vue';
 import { useStockStore } from '../stores/stockStore.js';
 import { notify } from '../composables/useNotify.js';
-import { Package, Search, Plus, X, AlertCircle, Filter, Pencil, Trash2 } from 'lucide-vue-next';
+import { Package, Plus, X, AlertCircle, Pencil, Trash2 } from 'lucide-vue-next';
+import { useAutoRefresh } from '../composables/useAutoRefresh.js';
+
+const { triggerRefresh, onRefresh } = useAutoRefresh();
 
 const stockStore = useStockStore();
 
@@ -279,6 +279,10 @@ const itemToDelete = ref(null);
 
 // --- CHARGEMENT ---
 onMounted(async () => {
+  await stockStore.fetchAllStocks();
+});
+
+onRefresh(async () => {
   await stockStore.fetchAllStocks();
 });
 
@@ -325,6 +329,7 @@ const handleSubmitProduct = async () => {
       notify("Produit créé avec succès");
     }
     showAddModal.value = false;
+    triggerRefresh();
   } catch (err) {
     notify(stockStore.error || "Une erreur est survenue");
   }
@@ -340,6 +345,7 @@ const handleDelete = async () => {
     await stockStore.deleteProduct(itemToDelete.value.product._id);
     notify("Produit supprimé avec succès");
     showDeleteConfirm.value = false;
+    triggerRefresh();
   } catch (err) {
     notify("Erreur lors de la suppression");
   }

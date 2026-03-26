@@ -3,8 +3,8 @@
     <!-- Entête avec badge de statut -->
     <div class="flex items-start justify-between mb-4">
       <div class="flex-1">
-        <h3 class="heading-3 text-slate-800 mb-1 line-clamp-2">{{ campaign.name }}</h3>
-        <p class="text-small text-slate-500">{{ campaign.department }}</p>
+        <h3 class="dashboard-card-title text-slate-800 mb-1 line-clamp-2">{{ campaign.name }}</h3>
+        <p class="dashboard-card-text text-slate-500">{{ campaign.department }}</p>
       </div>
       <span 
         :class="[
@@ -22,8 +22,8 @@
       <div class="flex items-center gap-3 text-sm">
         <Calendar :size="16" class="text-orange-500 flex-shrink-0" />
         <div class="min-w-0">
-          <p class="text-slate-500 text-xs">Période</p>
-          <p class="text-slate-700 font-medium truncate">
+          <p class="dashboard-card-text text-slate-500 text-xs">Période</p>
+          <p class="dashboard-card-text text-slate-700 font-medium truncate">
             {{ formatDate(campaign.startDate) }} à {{ formatDate(campaign.endDate) }}
           </p>
         </div>

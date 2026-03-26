@@ -2,7 +2,10 @@
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { notify } from "../composables/useNotify";
-import { Plus, Pencil, Trash2, X, AlertTriangle, Search, Filter } from "lucide-vue-next";
+import { useAutoRefresh } from "../composables/useAutoRefresh";
+
+const { triggerRefresh, onRefresh } = useAutoRefresh();
+import { Plus, Pencil, Trash2, X, AlertTriangle } from "lucide-vue-next";
 
 const users = ref([]);
 const loading = ref(true);
@@ -81,7 +84,8 @@ const saveUser = async () => {
       notify("Utilisateur créé avec succès");
     }
     showModal.value = false;
-    fetchUsers();
+    await fetchUsers();
+    triggerRefresh();
   } catch (err) {
     notify(err.response?.data?.message || "Erreur lors de l'enregistrement");
   }
@@ -100,13 +104,15 @@ const deleteUser = async () => {
     });
     notify("Utilisateur supprimé avec succès");
     showDeleteConfirm.value = false;
-    fetchUsers();
+    await fetchUsers();
+    triggerRefresh();
   } catch (err) {
     notify(err.response?.data?.message || "Erreur lors de la suppression");
   }
 };
 
 onMounted(fetchUsers);
+onRefresh(fetchUsers);
 </script>
 
 <template>
@@ -135,12 +141,11 @@ onMounted(fetchUsers);
       <!-- Filtres -->
       <div class="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6">
         <div class="relative flex-1">
-          <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" :size="18" />
           <input 
             v-model="searchQuery"
             type="text" 
             placeholder="Rechercher..." 
-            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
+            class="w-full px-4 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none transition-all text-sm"
           />
         </div>
         
@@ -154,7 +159,6 @@ onMounted(fetchUsers);
             <option value="Gestionnaire">Gestionnaires</option>
             <option value="Agent terrain">Agents terrain</option>
           </select>
-          <Filter class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" :size="16" />
         </div>
       </div>
 
