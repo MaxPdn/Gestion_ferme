@@ -6,7 +6,7 @@ import AppLayout from './layout/AppLayout.vue';
 </script>
 
 <template>
-  <router-view />
+  <router-view :key="$route.fullPath"/>
   
   <Transition name="fade">
     <div v-if="show" class="fixed bottom-5 right-5 z-50">
