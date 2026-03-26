@@ -7,6 +7,8 @@
 
 :root {
   --color-primary: #1e293b;
+  --color-sidebar: #1e293b;
+  --color-sidebar-light: #334155;
   --color-accent: #f97316;
   --color-success: #16a34a;
   --color-danger: #dc2626;
@@ -239,7 +241,45 @@ h3, .heading-3 {
 }
 
 .text-body {
-  font-size: 0.875rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.dashboard-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-container {
+    padding: 1.5rem;
+  }
+}
+
+.dashboard-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  line-height: 1.2;
+}
+
+.dashboard-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.dashboard-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.dashboard-card-text {
+  font-size: 0.95rem;
+  color: var(--color-text);
   line-height: 1.6;
 }
 
@@ -272,16 +312,29 @@ h3, .heading-3 {
   padding: 0.75rem 1.25rem;
   border-radius: 0.75rem;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   transition: all 0.2s ease;
   white-space: nowrap;
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   -webkit-user-select: none;
   user-select: none;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 2.5rem;
+  background-color: var(--color-sidebar);
+  color: #ffffff;
+}
+
+.btn:hover {
+  background-color: var(--color-sidebar-light);
+}
+
+.btn:disabled,
+.btn[disabled] {
+  background-color: #6b7280;
+  color: #d1d5db;
+  cursor: not-allowed;
 }
 
 @media (min-width: 768px) {

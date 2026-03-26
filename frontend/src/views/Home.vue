@@ -110,22 +110,22 @@ const chartOptions = ref({
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e293b]"></div>
   </div>
 
-  <div v-else class="min-h-screen font-serif bg-slate-50 p-4 md:p-10 font-sans antialiased text-slate-900">
+  <div v-else class="dashboard-container min-h-screen bg-slate-50 antialiased text-slate-900">
     
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
       <div>
-        <h2 class="text-slate-500 font-bold uppercase text-[12px] tracking-widest">Tableau de Bord</h2>
-        <h1 class="text-2xl md:text-4xl font-black text-[#1e293b] tracking-tight">Bonjour, Admin 👋</h1>
-        <p class="text-slate-400 font-medium mt-1 text-sm md:text-base">{{ currentDate }} • <span class="text-[#F97316]">TerraCore</span></p>
+        <h2 class="dashboard-subtitle uppercase tracking-widest">Tableau de Bord</h2>
+        <h1 class="dashboard-title">Bonjour, Admin 👋</h1>
+        <p class="dashboard-card-text mt-1">{{ currentDate }} • <span class="text-orange-500">TerraCore</span></p>
       </div>
       
       <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-        <button @click="isModalOpen = true" class="w-full sm:w-auto bg-[#1e293b] text-white font-bold px-6 py-4 md:py-3 rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 active:scale-95">
+        <button @click="isModalOpen = true" class="w-full sm:w-auto btn rounded-2xl hover:shadow-lg transition-all shadow-slate-200 flex items-center justify-center gap-2 active:scale-95">
           <span class="text-xl">+</span> 
           <span>Déclarer une perte</span>
         </button>
 
-        <button @click="logout" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-600 font-bold px-6 py-4 md:py-3 rounded-2xl hover:bg-red-50 hover:text-red-600 transition-all shadow-sm active:scale-95">
+        <button @click="logout" class="w-full sm:w-auto btn rounded-2xl shadow-sm active:scale-95">
           <span>Déconnexion</span>
         </button>
       </div>
@@ -133,10 +133,10 @@ const chartOptions = ref({
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
       <div v-for="stat in stats" :key="stat.label" class="bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white transition-all hover:translate-y-[-4px]">
-        <p class="text-slate-400 font-black uppercase text-[9px] md:text-[10px] tracking-widest mb-2 md:mb-3 leading-tight">{{ stat.label }}</p>
+        <p class="dashboard-card-title uppercase tracking-widest mb-2 md:mb-3 leading-tight">{{ stat.label }}</p>
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-1">
-          <span class="text-2xl md:text-3xl font-[900] text-[#1e293b]">{{ stat.value }}</span>
-          <span :class="stat.trendColor" class="text-[9px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full bg-opacity-10 w-fit">
+          <span class="text-xl md:text-2xl font-black text-[#1e293b]">{{ stat.value }}</span>
+          <span :class="stat.trendColor" class="text-xs font-black px-2 md:px-3 py-1 rounded-full bg-opacity-10 w-fit">
             {{ stat.trend }}
           </span>
         </div>
@@ -147,7 +147,7 @@ const chartOptions = ref({
       
       <div class="lg:col-span-2 bg-white p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
         <div class="flex justify-between items-center mb-6 md:mb-8">
-          <h3 class="text-lg md:text-xl font-black text-[#1e293b]">Évolution de la mortalité</h3>
+          <h3 class="dashboard-card-title">Évolution de la mortalité</h3>
         </div>
         <div class="h-60 md:h-72">
           <apexchart width="100%" height="100%" :options="chartOptions" :series="series"></apexchart>
@@ -155,7 +155,7 @@ const chartOptions = ref({
       </div>
 
       <div class="bg-white p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white">
-        <h3 class="text-lg md:text-xl font-black text-[#1e293b] mb-6 md:mb-8">Urgences</h3>
+        <h3 class="dashboard-card-title mb-6 md:mb-8">Urgences</h3>
         <div class="space-y-3 md:space-y-4">
           <div v-for="alert in topAlerts" :key="alert.id" 
                @click="router.push(`/campaign/${alert.id}`)"
@@ -182,8 +182,8 @@ const chartOptions = ref({
     <Transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 w-full max-w-md shadow-2xl border border-white max-h-[90vh] overflow-y-auto">
-          <h3 class="text-xl md:text-2xl font-black text-[#1e293b] mb-2">Nouvelle Perte</h3>
-          <p class="text-slate-400 text-sm mb-6 md:mb-8 font-medium leading-relaxed">Mise à jour de l'inventaire en direct.</p>
+          <h3 class="dashboard-card-title mb-2">Nouvelle Perte</h3>
+          <p class="dashboard-card-text mb-6 md:mb-8 font-medium leading-relaxed">Mise à jour de l'inventaire en direct.</p>
           
           <div class="space-y-4 md:space-y-6">
             <div>
