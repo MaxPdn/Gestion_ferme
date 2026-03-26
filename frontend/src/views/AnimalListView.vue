@@ -4,6 +4,8 @@ import { getAnimals, createAnimal, deleteAnimal } from "@/services/animalService
 import { useRouter } from "vue-router";
 import AddAnimalModal from "@/components/animal-component/form/AddAnimalModal.vue";
 import { useAutoRefresh } from "../composables/useAutoRefresh";
+import {notify} from '@/composables/useNotify'
+import Swal from "sweetalert2";
 
 const { triggerRefresh, onRefresh } = useAutoRefresh();
 
@@ -33,22 +35,51 @@ const handleCreateAnimal = async (data) => {
 
 
 const handleDelete = async (id) => {
-  const confirmDelete = confirm("Supprimer cet animal ?");
+  // 1. On demande confirmation avec une jolie popup
+  const result = await Swal.fire({
+    title: 'Supprimer cet animal ?',
+    text: "Cette action est irréversible !",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Oui, supprimer !',
+    cancelButtonText: 'Annuler'
+  });
 
-  if (!confirmDelete) return;
+  // 2. Si l'utilisateur annule, on s'arrête là
+  if (!result.isConfirmed) return;
 
+  // 3. Sauvegarde de l'état actuel pour le rollback
   const oldAnimals = [...animals.value];
 
+  // 4. Mise à jour optimiste (on supprime visuellement tout de suite)
   animals.value = animals.value.filter(a => a._id !== id);
 
   try {
     await deleteAnimal(id);
     triggerRefresh();
+    
+    // Optionnel : Petit message de succès discret
+    Swal.fire({
+      title: 'Supprimé !',
+      text: "L'animal a bien été retiré.",
+      icon: 'success',
+      timer: 1500,
+      showConfirmButton: false
+    });
+
   } catch (err) {
     console.error(err);
 
-    // rollback si erreur
+    // 5. Rollback en cas d'erreur API
     animals.value = oldAnimals;
+
+    Swal.fire({
+      title: 'Erreur !',
+      text: "Impossible de supprimer l'animal. Veuillez réessayer.",
+      icon: 'error'
+    });
   }
 };
 
